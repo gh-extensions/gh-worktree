@@ -4,42 +4,9 @@
 
 set -euo pipefail
 
-# Parse issue worktree arguments
+# Print usage for the issue subcommand to stdout
 #
-# Extracts the issue number (first positional numeric arg, strips leading #).
-# Unknown flags produce an error.
-#
-# Usage: _parse_issue_args num_ref [args...]
-_parse_issue_args() {
-	local -n _pwia_num="$1"
-	shift
-
-	local _pwia_raw=("$@")
-	local _pwia_i=0
-
-	while [[ $_pwia_i -lt ${#_pwia_raw[@]} ]]; do
-		local _pwia_arg="${_pwia_raw[$_pwia_i]}"
-		case "$_pwia_arg" in
-		-*)
-			gum log --level error "unknown flag '$_pwia_arg'"
-			return 1
-			;;
-		*)
-			local _pwia_stripped="${_pwia_arg#\#}"
-			if [[ -z "$_pwia_num" && "$_pwia_stripped" =~ ^[0-9]+$ ]]; then
-				# shellcheck disable=SC2034 # nameref: set by caller
-				_pwia_num="$_pwia_stripped"
-			else
-				gum log --level error "unexpected argument '$_pwia_arg'"
-				return 1
-			fi
-			;;
-		esac
-		((++_pwia_i))
-	done
-}
-
-# Issue worktree help
+# Usage: _show_issue_help
 _show_issue_help() {
 	cat <<'EOF'
 gh worktree issue - Open an isolated worktree for an issue
@@ -77,7 +44,7 @@ _gh_issue() {
 	_split_on_separator args passthrough "$@"
 
 	local issue_number=""
-	_parse_issue_args issue_number "${args[@]}"
+	_parse_number_arg issue_number "${args[@]}"
 
 	if [[ -z "$issue_number" ]]; then
 		gum log --level error "No issue number provided"

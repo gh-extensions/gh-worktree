@@ -4,42 +4,9 @@
 
 set -euo pipefail
 
-# Parse PR worktree arguments
+# Print usage for the pr subcommand to stdout
 #
-# Extracts the PR number (first positional numeric arg, strips leading #).
-# Unknown flags produce an error.
-#
-# Usage: _parse_pr_args num_ref [args...]
-_parse_pr_args() {
-	local -n _pwpa_num="$1"
-	shift
-
-	local _pwpa_raw=("$@")
-	local _pwpa_i=0
-
-	while [[ $_pwpa_i -lt ${#_pwpa_raw[@]} ]]; do
-		local _pwpa_arg="${_pwpa_raw[$_pwpa_i]}"
-		case "$_pwpa_arg" in
-		-*)
-			gum log --level error "unknown flag '$_pwpa_arg'"
-			return 1
-			;;
-		*)
-			local _pwpa_stripped="${_pwpa_arg#\#}"
-			if [[ -z "$_pwpa_num" && "$_pwpa_stripped" =~ ^[0-9]+$ ]]; then
-				# shellcheck disable=SC2034 # nameref: set by caller
-				_pwpa_num="$_pwpa_stripped"
-			else
-				gum log --level error "unexpected argument '$_pwpa_arg'"
-				return 1
-			fi
-			;;
-		esac
-		((++_pwpa_i))
-	done
-}
-
-# PR worktree help
+# Usage: _show_pr_help
 _show_pr_help() {
 	cat <<'EOF'
 gh worktree pr - Open an isolated worktree for a pull request
@@ -76,7 +43,7 @@ _gh_pr() {
 	_split_on_separator args passthrough "$@"
 
 	local pr_number=""
-	_parse_pr_args pr_number "${args[@]}"
+	_parse_number_arg pr_number "${args[@]}"
 
 	if [[ -z "$pr_number" ]]; then
 		gum log --level error "No pull request number provided"

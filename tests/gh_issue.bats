@@ -10,7 +10,7 @@ REPO_ROOT="$(cd "$(dirname "$BATS_TEST_DIRNAME")" && pwd)"
 setup() {
 	export HOME="$BATS_TEST_TMPDIR"
 	# Point to a stub scripts/ dir so gh_worktree.sh dispatches to exported
-	# _worktree_* function mocks without running real git commands.
+	# _gh_worktree_* function mocks without running real git commands.
 	export _gh_worktree_source_dir="$BATS_TEST_TMPDIR"
 	mkdir -p "$BATS_TEST_TMPDIR/scripts"
 	printf '#!/usr/bin/env bash\ncmd="${1:-}"; shift\n"_gh_worktree_${cmd}" "$@"\n' \
@@ -35,58 +35,9 @@ setup() {
 		source "$REPO_ROOT/scripts/gh_worktree.sh"
 		# shellcheck source=../scripts/gh_issue.sh
 		source "$REPO_ROOT/scripts/gh_issue.sh"
-		declare -f _parse_issue_args _show_issue_help _gh_issue \
-			_split_on_separator _git_repo_path _gh_worktree_create _gh_worktree_run
+		declare -f _parse_number_arg _show_issue_help _gh_issue \
+			_split_on_separator _git_repo_path _gh_worktree_create _gh_worktree_remove _gh_worktree_run
 	)"
-}
-
-# ---------------------------------------------------------------------------
-# _parse_issue_args
-# ---------------------------------------------------------------------------
-
-@test "_parse_issue_args: captures issue number from positional arg" {
-	local number=""
-	_parse_issue_args number 55
-
-	[[ "$number" == "55" ]]
-}
-
-@test "_parse_issue_args: strips leading # from issue number" {
-	local number=""
-	_parse_issue_args number "#55"
-
-	[[ "$number" == "55" ]]
-}
-
-@test "_parse_issue_args: defaults to empty when no args given" {
-	local number=""
-	_parse_issue_args number
-
-	[[ -z "$number" ]]
-}
-
-@test "_parse_issue_args: returns error for unknown flags" {
-	local number=""
-	run _parse_issue_args number --foo
-
-	[[ "$status" -eq 1 ]]
-	[[ "$output" == *"unknown flag '--foo'"* ]]
-}
-
-@test "_parse_issue_args: returns error for unexpected non-numeric arg" {
-	local number=""
-	run _parse_issue_args number foo
-
-	[[ "$status" -eq 1 ]]
-	[[ "$output" == *"unexpected argument 'foo'"* ]]
-}
-
-@test "_parse_issue_args: returns error for second positional arg" {
-	local number=""
-	run _parse_issue_args number 55 99
-
-	[[ "$status" -eq 1 ]]
-	[[ "$output" == *"unexpected argument '99'"* ]]
 }
 
 # ---------------------------------------------------------------------------

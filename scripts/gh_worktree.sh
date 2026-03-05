@@ -63,7 +63,7 @@ _gh_worktree_has_unpushed() {
 #   remote_ref  — remote branch to fetch (e.g. "feature/my-branch")
 #   head_sha    — optional SHA to pin to (run sessions); empty uses remote tip
 #   branch      — optional local branch name; empty means use name (issue/run)
-#                 when set and matching remote_ref, auto-tracking is enabled (PR)
+#                 when set, auto-tracking is enabled so `git push` updates the PR (PR sessions)
 #
 # Stdout: worktree path
 # Stderr: git output
@@ -155,7 +155,7 @@ _gh_worktree_remove() {
 #
 # Writes the result into the nameref; returns 1 and logs an error on failure.
 #
-# Usage: _git_repo_path git_dir_ref
+# Usage: _git_repo_path <var_ref>
 _git_repo_path() {
 	local -n _git_dir_ref="$1"
 	_git_dir_ref=$(git rev-parse --show-toplevel 2>/dev/null || true)
@@ -163,6 +163,42 @@ _git_repo_path() {
 		gum log --level error "Not inside a git repository"
 		return 1
 	fi
+}
+
+# Parse a single numeric ID from positional arguments
+#
+# Accepts one numeric value (optionally prefixed with #). Flags and extra
+# positional arguments are rejected. Used by all three subcommands (pr, issue,
+# run) so the logic lives here rather than being duplicated in each script.
+#
+# Usage: _parse_number_arg <var_ref> [args...]
+_parse_number_arg() {
+	local -n _pna_num="$1"
+	shift
+
+	local _pna_raw=("$@")
+	local _pna_i=0
+
+	while [[ $_pna_i -lt ${#_pna_raw[@]} ]]; do
+		local _pna_arg="${_pna_raw[$_pna_i]}"
+		case "$_pna_arg" in
+		-*)
+			gum log --level error "unknown flag '$_pna_arg'"
+			return 1
+			;;
+		*)
+			local _pna_stripped="${_pna_arg#\#}"
+			if [[ -z "$_pna_num" && "$_pna_stripped" =~ ^[0-9]+$ ]]; then
+				# shellcheck disable=SC2034 # nameref: set by caller
+				_pna_num="$_pna_stripped"
+			else
+				gum log --level error "unexpected argument '$_pna_arg'"
+				return 1
+			fi
+			;;
+		esac
+		((++_pna_i))
+	done
 }
 
 # Split arguments on the first -- separator
@@ -197,6 +233,7 @@ _gh_worktree_run() {
 	shift
 	local cmd=("$@")
 
+	# trap EXIT is process-global; this function is called once per process lifetime
 	# shellcheck disable=SC2064
 	trap "_gh_worktree_remove $(printf '%q' "$worktree_path")" EXIT
 

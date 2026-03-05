@@ -34,7 +34,8 @@ setup() {
 		# shellcheck source=../scripts/gh_worktree.sh
 		source "$REPO_ROOT/scripts/gh_worktree.sh"
 		declare -f _gh_worktree_base_dir _gh_worktree_is_dirty _gh_worktree_has_unpushed \
-			_gh_worktree_create _gh_worktree_remove _git_repo_path _split_on_separator _gh_worktree_run
+			_gh_worktree_create _gh_worktree_remove _git_repo_path _parse_number_arg \
+			_split_on_separator _gh_worktree_run
 	)"
 }
 
@@ -123,6 +124,55 @@ teardown() {
 
 	[[ "${#args[@]}" -eq 0 ]]
 	[[ "${#cmd[@]}" -eq 0 ]]
+}
+
+# ---------------------------------------------------------------------------
+# _parse_number_arg
+# ---------------------------------------------------------------------------
+
+@test "_parse_number_arg: captures number from positional arg" {
+	local num=""
+	_parse_number_arg num 42
+
+	[[ "$num" == "42" ]]
+}
+
+@test "_parse_number_arg: strips leading # from number" {
+	local num=""
+	_parse_number_arg num "#42"
+
+	[[ "$num" == "42" ]]
+}
+
+@test "_parse_number_arg: defaults to empty when no args given" {
+	local num=""
+	_parse_number_arg num
+
+	[[ -z "$num" ]]
+}
+
+@test "_parse_number_arg: returns error for unknown flags" {
+	local num=""
+	run _parse_number_arg num --draft
+
+	[[ "$status" -eq 1 ]]
+	[[ "$output" == *"unknown flag '--draft'"* ]]
+}
+
+@test "_parse_number_arg: returns error for unexpected non-numeric arg" {
+	local num=""
+	run _parse_number_arg num foo
+
+	[[ "$status" -eq 1 ]]
+	[[ "$output" == *"unexpected argument 'foo'"* ]]
+}
+
+@test "_parse_number_arg: returns error for second positional arg" {
+	local num=""
+	run _parse_number_arg num 42 99
+
+	[[ "$status" -eq 1 ]]
+	[[ "$output" == *"unexpected argument '99'"* ]]
 }
 
 # ---------------------------------------------------------------------------
@@ -320,6 +370,48 @@ teardown() {
 	unset GH_WORKTREE_DIR
 }
 
+@test "_gh_worktree_create: pins worktree to head_sha when provided" {
+	local repo_real
+	repo_real=$(cd "$BATS_TEST_TMPDIR/repo" && pwd -P)
+
+	# Record current HEAD, then add a new commit so HEAD moves forward
+	local old_sha
+	old_sha=$(git -C "$repo_real" rev-parse HEAD)
+	git -C "$repo_real" commit --allow-empty -m "newer commit" >/dev/null 2>&1
+	git -C "$repo_real" push >/dev/null 2>&1
+
+	gh() { return 1; }
+	export -f gh
+
+	local output
+	output=$(_gh_worktree_create "$repo_real" "run-99" "$DEFAULT_BRANCH" "$old_sha" "")
+
+	[[ -d "$output" ]]
+	local wt_sha
+	wt_sha=$(git -C "$output" rev-parse HEAD)
+	[[ "$wt_sha" == "$old_sha" ]]
+}
+
+@test "_gh_worktree_create: fast-forwards existing local branch to remote tip" {
+	local repo_real
+	repo_real=$(cd "$BATS_TEST_TMPDIR/repo" && pwd -P)
+
+	# Create a local branch that also exists on the remote (simulates a PR branch)
+	git -C "$repo_real" branch pr-77 HEAD >/dev/null 2>&1
+	git -C "$repo_real" push origin "pr-77:pr-77" >/dev/null 2>&1
+
+	gh() { return 1; }
+	export -f gh
+
+	local output
+	output=$(_gh_worktree_create "$repo_real" "pr-77" "pr-77" "" "pr-77")
+
+	[[ -d "$output" ]]
+	local actual_branch
+	actual_branch=$(git -C "$output" rev-parse --abbrev-ref HEAD)
+	[[ "$actual_branch" == "pr-77" ]]
+}
+
 # ---------------------------------------------------------------------------
 # _gh_worktree_run
 # ---------------------------------------------------------------------------
@@ -348,4 +440,14 @@ teardown() {
 	run _gh_worktree_run "$WORKTREE_PATH" false
 
 	[[ "$status" -ne 0 ]]
+}
+
+@test "_gh_worktree_run: opens SHELL when no command given" {
+	SHELL="$(command -v true)"
+	export SHELL
+
+	run _gh_worktree_run "$WORKTREE_PATH"
+
+	[[ "$status" -eq 0 ]]
+	[[ ! -d "$WORKTREE_PATH" ]]
 }

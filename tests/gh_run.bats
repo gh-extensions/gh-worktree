@@ -10,7 +10,7 @@ REPO_ROOT="$(cd "$(dirname "$BATS_TEST_DIRNAME")" && pwd)"
 setup() {
 	export HOME="$BATS_TEST_TMPDIR"
 	# Point to a stub scripts/ dir so gh_worktree.sh dispatches to exported
-	# _worktree_* function mocks without running real git commands.
+	# _gh_worktree_* function mocks without running real git commands.
 	export _gh_worktree_source_dir="$BATS_TEST_TMPDIR"
 	mkdir -p "$BATS_TEST_TMPDIR/scripts"
 	printf '#!/usr/bin/env bash\ncmd="${1:-}"; shift\n"_gh_worktree_${cmd}" "$@"\n' \
@@ -32,58 +32,9 @@ setup() {
 		source "$REPO_ROOT/scripts/gh_worktree.sh"
 		# shellcheck source=../scripts/gh_run.sh
 		source "$REPO_ROOT/scripts/gh_run.sh"
-		declare -f _parse_run_args _show_run_help _gh_run \
-			_split_on_separator _git_repo_path _gh_worktree_create _gh_worktree_run
+		declare -f _parse_number_arg _show_run_help _gh_run \
+			_split_on_separator _git_repo_path _gh_worktree_create _gh_worktree_remove _gh_worktree_run
 	)"
-}
-
-# ---------------------------------------------------------------------------
-# _parse_run_args
-# ---------------------------------------------------------------------------
-
-@test "_parse_run_args: captures run ID from positional arg" {
-	local id=""
-	_parse_run_args id 123
-
-	[[ "$id" == "123" ]]
-}
-
-@test "_parse_run_args: strips leading # from run ID" {
-	local id=""
-	_parse_run_args id "#123"
-
-	[[ "$id" == "123" ]]
-}
-
-@test "_parse_run_args: defaults to empty when no args given" {
-	local id=""
-	_parse_run_args id
-
-	[[ -z "$id" ]]
-}
-
-@test "_parse_run_args: returns error for unknown flags" {
-	local id=""
-	run _parse_run_args id --foo
-
-	[[ "$status" -eq 1 ]]
-	[[ "$output" == *"unknown flag '--foo'"* ]]
-}
-
-@test "_parse_run_args: returns error for unexpected non-numeric arg" {
-	local id=""
-	run _parse_run_args id foo
-
-	[[ "$status" -eq 1 ]]
-	[[ "$output" == *"unexpected argument 'foo'"* ]]
-}
-
-@test "_parse_run_args: returns error for second positional arg" {
-	local id=""
-	run _parse_run_args id 123 456
-
-	[[ "$status" -eq 1 ]]
-	[[ "$output" == *"unexpected argument '456'"* ]]
 }
 
 # ---------------------------------------------------------------------------

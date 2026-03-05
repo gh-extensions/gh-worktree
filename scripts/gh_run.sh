@@ -4,42 +4,9 @@
 
 set -euo pipefail
 
-# Parse run worktree arguments
+# Print usage for the run subcommand to stdout
 #
-# Extracts the run ID (first positional numeric arg, strips leading #).
-# Unknown flags produce an error.
-#
-# Usage: _parse_run_args id_ref [args...]
-_parse_run_args() {
-	local -n _pwra_id="$1"
-	shift
-
-	local _pwra_raw=("$@")
-	local _pwra_i=0
-
-	while [[ $_pwra_i -lt ${#_pwra_raw[@]} ]]; do
-		local _pwra_arg="${_pwra_raw[$_pwra_i]}"
-		case "$_pwra_arg" in
-		-*)
-			gum log --level error "unknown flag '$_pwra_arg'"
-			return 1
-			;;
-		*)
-			local _pwra_stripped="${_pwra_arg#\#}"
-			if [[ -z "$_pwra_id" && "$_pwra_stripped" =~ ^[0-9]+$ ]]; then
-				# shellcheck disable=SC2034 # nameref: set by caller
-				_pwra_id="$_pwra_stripped"
-			else
-				gum log --level error "unexpected argument '$_pwra_arg'"
-				return 1
-			fi
-			;;
-		esac
-		((++_pwra_i))
-	done
-}
-
-# Run worktree help
+# Usage: _show_run_help
 _show_run_help() {
 	cat <<'EOF'
 gh worktree run - Open an isolated worktree for a workflow run
@@ -78,7 +45,7 @@ _gh_run() {
 	_split_on_separator args passthrough "$@"
 
 	local run_id=""
-	_parse_run_args run_id "${args[@]}"
+	_parse_number_arg run_id "${args[@]}"
 
 	if [[ -z "$run_id" ]]; then
 		gum log --level error "No run ID provided"
