@@ -11,6 +11,7 @@ set -euo pipefail
 #   2. gh config get worktree.dir
 #   3. Default: .github/worktrees
 #
+# Stdout: base directory path
 # Usage: base=$(_gh_worktree_base_dir <cwd>)
 _gh_worktree_base_dir() {
 	local cwd="$1"

@@ -56,7 +56,7 @@ _gh_issue() {
 	_git_repo_path cwd || return 1
 
 	local default_branch
-	default_branch=$(git -C "$cwd" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null)
+	default_branch=$(git -C "$cwd" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null || true)
 	default_branch="${default_branch#refs/remotes/origin/}"
 	if [[ -z "$default_branch" ]]; then
 		default_branch=$(gum spin --title "Fetching default branch..." -- \
