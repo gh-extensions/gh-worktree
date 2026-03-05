@@ -121,6 +121,9 @@ _gh_worktree_create() {
 
 # Remove a git worktree, auto-stashing dirty changes beforehand
 #
+# Dirty changes — including untracked files — are staged with `git add -A`
+# then stashed, so they survive worktree removal and can be recovered via
+# `git stash list` in the main repository.
 # Silently succeeds if the worktree path does not exist.
 # Warns about unpushed commits (they survive in the branch reflog).
 #
@@ -205,7 +208,7 @@ _parse_number_arg() {
 #
 # Everything before -- goes into before_ref; everything after into after_ref.
 #
-# Usage: _split_on_separator before_ref after_ref "$@"
+# Usage: _split_on_separator before_ref after_ref [args...]
 _split_on_separator() {
 	local -n _before_ref="$1"
 	local -n _after_ref="$2"
@@ -226,6 +229,9 @@ _split_on_separator() {
 }
 
 # Run a command (or $SHELL) inside the worktree, removing the worktree on exit.
+#
+# Changes directory into worktree_path (permanent for this process) and sets
+# a trap to remove the worktree when the process exits.
 #
 # Usage: _gh_worktree_run <worktree_path> [cmd...]
 _gh_worktree_run() {

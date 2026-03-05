@@ -66,6 +66,37 @@ setup() {
 	[[ "$status" -eq 1 ]]
 }
 
+@test "_gh_pr: accepts #-prefixed PR number" {
+	gum() {
+		case "$1" in
+		spin)
+			while [[ $# -gt 0 && "$1" != "--" ]]; do shift; done
+			[[ $# -gt 0 ]] && shift
+			"$@"
+			;;
+		log) ;;
+		esac
+	}
+	export -f gum
+
+	gh() {
+		case "$1 $2" in
+		"pr view") printf '{"headRefName":"feature-branch"}' ;;
+		esac
+	}
+	export -f gh
+
+	_gh_worktree_create() { echo "ARGS:name=$2"; }
+	export -f _gh_worktree_create
+
+	_gh_worktree_run() { echo "RUN:path=$1"; }
+
+	run _gh_pr "#42"
+
+	[[ "$status" -eq 0 ]]
+	[[ "$output" == *"name=pull-42"* ]]
+}
+
 @test "_gh_pr: errors when metadata fetch fails" {
 	gum() {
 		case "$1" in

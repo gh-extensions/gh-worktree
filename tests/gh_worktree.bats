@@ -225,6 +225,16 @@ teardown() {
 	[[ "$status" -eq 0 ]]
 }
 
+@test "_gh_worktree_is_dirty: returns 0 for modified tracked file" {
+	echo "content" >"$WORKTREE_PATH/tracked.txt"
+	git -C "$WORKTREE_PATH" add tracked.txt
+	git -C "$WORKTREE_PATH" commit -m "add tracked" >/dev/null 2>&1
+	echo "modified" >"$WORKTREE_PATH/tracked.txt"
+
+	run _gh_worktree_is_dirty "$WORKTREE_PATH"
+	[[ "$status" -eq 0 ]]
+}
+
 # ---------------------------------------------------------------------------
 # _gh_worktree_has_unpushed
 # ---------------------------------------------------------------------------
@@ -396,9 +406,15 @@ teardown() {
 	local repo_real
 	repo_real=$(cd "$BATS_TEST_TMPDIR/repo" && pwd -P)
 
-	# Create a local branch that also exists on the remote (simulates a PR branch)
+	# Push an initial pr-77 branch to the remote
 	git -C "$repo_real" branch pr-77 HEAD >/dev/null 2>&1
 	git -C "$repo_real" push origin "pr-77:pr-77" >/dev/null 2>&1
+
+	# Advance the remote by one commit so the local branch is behind
+	git -C "$repo_real" commit --allow-empty -m "remote advance" >/dev/null 2>&1
+	git -C "$repo_real" push origin "HEAD:pr-77" >/dev/null 2>&1
+	local remote_tip
+	remote_tip=$(git -C "$repo_real" rev-parse origin/pr-77)
 
 	gh() { return 1; }
 	export -f gh
@@ -410,6 +426,9 @@ teardown() {
 	local actual_branch
 	actual_branch=$(git -C "$output" rev-parse --abbrev-ref HEAD)
 	[[ "$actual_branch" == "pr-77" ]]
+	local wt_sha
+	wt_sha=$(git -C "$output" rev-parse HEAD)
+	[[ "$wt_sha" == "$remote_tip" ]]
 }
 
 # ---------------------------------------------------------------------------

@@ -66,6 +66,37 @@ setup() {
 	[[ "$status" -eq 1 ]]
 }
 
+@test "_gh_run: accepts #-prefixed run ID" {
+	gum() {
+		case "$1" in
+		spin)
+			while [[ $# -gt 0 && "$1" != "--" ]]; do shift; done
+			[[ $# -gt 0 ]] && shift
+			"$@"
+			;;
+		log) ;;
+		esac
+	}
+	export -f gum
+
+	gh() {
+		case "$1 $2" in
+		"run view") printf '{"headBranch":"main","headSha":"abc123"}' ;;
+		esac
+	}
+	export -f gh
+
+	_gh_worktree_create() { echo "ARGS:name=$2"; }
+	export -f _gh_worktree_create
+
+	_gh_worktree_run() { echo "RUN:path=$1"; }
+
+	run _gh_run "#123"
+
+	[[ "$status" -eq 0 ]]
+	[[ "$output" == *"name=run-123"* ]]
+}
+
 @test "_gh_run: errors when metadata fetch fails" {
 	gum() {
 		case "$1" in

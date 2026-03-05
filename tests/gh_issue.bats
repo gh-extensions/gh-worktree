@@ -69,6 +69,30 @@ setup() {
 	[[ "$status" -eq 1 ]]
 }
 
+@test "_gh_issue: accepts #-prefixed issue number" {
+	gum() {
+		case "$1" in
+		spin)
+			while [[ $# -gt 0 && "$1" != "--" ]]; do shift; done
+			[[ $# -gt 0 ]] && shift
+			"$@"
+			;;
+		log) ;;
+		esac
+	}
+	export -f gum
+
+	_gh_worktree_create() { echo "ARGS:name=$2"; }
+	export -f _gh_worktree_create
+
+	_gh_worktree_run() { echo "RUN:path=$1"; }
+
+	run _gh_issue "#55"
+
+	[[ "$status" -eq 0 ]]
+	[[ "$output" == *"name=issue-55"* ]]
+}
+
 @test "_gh_issue: errors when worktree creation returns empty path" {
 	gum() {
 		case "$1" in
