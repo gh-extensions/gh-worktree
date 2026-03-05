@@ -9,6 +9,7 @@ REPO_ROOT="$(cd "$(dirname "$BATS_TEST_DIRNAME")" && pwd)"
 
 setup() {
 	export HOME="$BATS_TEST_TMPDIR"
+	export _gh_worktree_source_dir="$REPO_ROOT"
 
 	gum() { if [[ "$1" == "log" ]]; then shift; shift; shift; echo "$@"; fi; }
 	gh() { echo ""; }
@@ -20,7 +21,18 @@ setup() {
 		"symbolic-ref refs/remotes/origin/HEAD") echo "refs/remotes/origin/main" ;;
 		esac
 	}
-	export -f gum gh git
+	# Intercept `bash .../gh_worktree.sh <subcmd> <args>` and dispatch to the
+	# local bash-function mock so gum spin can be tested without a subprocess.
+	bash() {
+		local script="${1:-}"; shift || true
+		if [[ "$script" == */gh_worktree.sh ]]; then
+			local subcmd="${1:-}"; shift || true
+			"_worktree_${subcmd}" "$@"
+		else
+			command bash "$script" "$@"
+		fi
+	}
+	export -f gum gh git bash
 
 	# shellcheck disable=SC2155
 	eval "$(
@@ -127,6 +139,7 @@ setup() {
 	_worktree_create() {
 		echo "ARGS:cwd=$1 name=$2 remote_ref=$3 sha=$4 branch=$5"
 	}
+	export -f _worktree_create
 
 	_run_in_worktree() { echo "RUN:path=$1"; }
 
@@ -152,6 +165,7 @@ setup() {
 	export -f gum
 
 	_worktree_create() { echo "/tmp/worktree"; }
+	export -f _worktree_create
 
 	_run_in_worktree() {
 		shift

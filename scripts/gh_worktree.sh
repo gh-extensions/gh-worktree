@@ -205,3 +205,17 @@ _run_in_worktree() {
 		"$SHELL"
 	fi
 }
+
+# When executed directly (not sourced), dispatch to the named function.
+#
+# Usage: bash gh_worktree.sh create <args...>
+#        bash gh_worktree.sh remove <worktree_path>
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+	cmd="${1:-}"
+	shift
+	case "$cmd" in
+	create) _worktree_create "$@" ;;
+	remove) _worktree_remove "$@" ;;
+	*) echo "gh_worktree.sh: unknown command '${cmd}'" >&2; exit 1 ;;
+	esac
+fi

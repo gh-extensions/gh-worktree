@@ -98,9 +98,9 @@ _gh_pr_exec() {
 	head_ref=$(printf '%s' "$meta" | jq -r '.headRefName')
 
 	local name="pull-${pr_number}"
-	gum log --level info "Creating worktree for PR #${pr_number}..."
 	local worktree_path
-	worktree_path=$(_worktree_create "$cwd" "$name" "$head_ref" "" "$head_ref")
+	worktree_path=$(gum spin --show-error --title "Creating worktree for PR #${pr_number}..." -- \
+		bash "$_gh_worktree_source_dir/scripts/gh_worktree.sh" create "$cwd" "$name" "$head_ref" "" "$head_ref")
 
 	_run_in_worktree "$worktree_path" "${cmd[@]}"
 }
