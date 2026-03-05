@@ -25,55 +25,55 @@ setup() {
 		source "$REPO_ROOT/scripts/gh_worktree.sh"
 		# shellcheck source=../scripts/gh_pr.sh
 		source "$REPO_ROOT/scripts/gh_pr.sh"
-		declare -f _parse_worktree_pr_args _show_pr_help _worktree_pr \
+		declare -f _parse_pr_args _show_pr_help _worktree_pr \
 			_split_args _git_repo_path _worktree_create _run_in_worktree
 	)"
 }
 
 # ---------------------------------------------------------------------------
-# _parse_worktree_pr_args
+# _parse_pr_args
 # ---------------------------------------------------------------------------
 
-@test "_parse_worktree_pr_args: captures PR number from positional arg" {
+@test "_parse_pr_args: captures PR number from positional arg" {
 	local number=""
-	_parse_worktree_pr_args number 42
+	_parse_pr_args number 42
 
 	[[ "$number" == "42" ]]
 }
 
-@test "_parse_worktree_pr_args: strips leading # from PR number" {
+@test "_parse_pr_args: strips leading # from PR number" {
 	local number=""
-	_parse_worktree_pr_args number "#42"
+	_parse_pr_args number "#42"
 
 	[[ "$number" == "42" ]]
 }
 
-@test "_parse_worktree_pr_args: defaults to empty when no args given" {
+@test "_parse_pr_args: defaults to empty when no args given" {
 	local number=""
-	_parse_worktree_pr_args number
+	_parse_pr_args number
 
 	[[ -z "$number" ]]
 }
 
-@test "_parse_worktree_pr_args: returns error for unknown flags" {
+@test "_parse_pr_args: returns error for unknown flags" {
 	local number=""
-	run _parse_worktree_pr_args number --draft
+	run _parse_pr_args number --draft
 
 	[[ "$status" -eq 1 ]]
 	[[ "$output" == *"unknown flag '--draft'"* ]]
 }
 
-@test "_parse_worktree_pr_args: returns error for unexpected non-numeric arg" {
+@test "_parse_pr_args: returns error for unexpected non-numeric arg" {
 	local number=""
-	run _parse_worktree_pr_args number foo
+	run _parse_pr_args number foo
 
 	[[ "$status" -eq 1 ]]
 	[[ "$output" == *"unexpected argument 'foo'"* ]]
 }
 
-@test "_parse_worktree_pr_args: returns error for second positional arg" {
+@test "_parse_pr_args: returns error for second positional arg" {
 	local number=""
-	run _parse_worktree_pr_args number 42 99
+	run _parse_pr_args number 42 99
 
 	[[ "$status" -eq 1 ]]
 	[[ "$output" == *"unexpected argument '99'"* ]]

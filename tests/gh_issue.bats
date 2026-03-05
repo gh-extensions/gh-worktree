@@ -28,55 +28,55 @@ setup() {
 		source "$REPO_ROOT/scripts/gh_worktree.sh"
 		# shellcheck source=../scripts/gh_issue.sh
 		source "$REPO_ROOT/scripts/gh_issue.sh"
-		declare -f _parse_worktree_issue_args _show_issue_help _worktree_issue \
+		declare -f _parse_issue_args _show_issue_help _worktree_issue \
 			_split_args _git_repo_path _worktree_create _run_in_worktree
 	)"
 }
 
 # ---------------------------------------------------------------------------
-# _parse_worktree_issue_args
+# _parse_issue_args
 # ---------------------------------------------------------------------------
 
-@test "_parse_worktree_issue_args: captures issue number from positional arg" {
+@test "_parse_issue_args: captures issue number from positional arg" {
 	local number=""
-	_parse_worktree_issue_args number 55
+	_parse_issue_args number 55
 
 	[[ "$number" == "55" ]]
 }
 
-@test "_parse_worktree_issue_args: strips leading # from issue number" {
+@test "_parse_issue_args: strips leading # from issue number" {
 	local number=""
-	_parse_worktree_issue_args number "#55"
+	_parse_issue_args number "#55"
 
 	[[ "$number" == "55" ]]
 }
 
-@test "_parse_worktree_issue_args: defaults to empty when no args given" {
+@test "_parse_issue_args: defaults to empty when no args given" {
 	local number=""
-	_parse_worktree_issue_args number
+	_parse_issue_args number
 
 	[[ -z "$number" ]]
 }
 
-@test "_parse_worktree_issue_args: returns error for unknown flags" {
+@test "_parse_issue_args: returns error for unknown flags" {
 	local number=""
-	run _parse_worktree_issue_args number --foo
+	run _parse_issue_args number --foo
 
 	[[ "$status" -eq 1 ]]
 	[[ "$output" == *"unknown flag '--foo'"* ]]
 }
 
-@test "_parse_worktree_issue_args: returns error for unexpected non-numeric arg" {
+@test "_parse_issue_args: returns error for unexpected non-numeric arg" {
 	local number=""
-	run _parse_worktree_issue_args number foo
+	run _parse_issue_args number foo
 
 	[[ "$status" -eq 1 ]]
 	[[ "$output" == *"unexpected argument 'foo'"* ]]
 }
 
-@test "_parse_worktree_issue_args: returns error for second positional arg" {
+@test "_parse_issue_args: returns error for second positional arg" {
 	local number=""
-	run _parse_worktree_issue_args number 55 99
+	run _parse_issue_args number 55 99
 
 	[[ "$status" -eq 1 ]]
 	[[ "$output" == *"unexpected argument '99'"* ]]

@@ -7,8 +7,8 @@ set -euo pipefail
 # Extracts the run ID (first positional numeric arg, strips leading #).
 # Unknown flags produce an error.
 #
-# Usage: _parse_worktree_run_args id_ref [args...]
-_parse_worktree_run_args() {
+# Usage: _parse_run_args id_ref [args...]
+_parse_run_args() {
 	local -n _pwra_id="$1"
 	shift
 
@@ -76,7 +76,7 @@ _worktree_run() {
 	_split_args args cmd "$@"
 
 	local run_id=""
-	_parse_worktree_run_args run_id "${args[@]}"
+	_parse_run_args run_id "${args[@]}"
 
 	if [[ -z "$run_id" ]]; then
 		gum log --level error "No run ID provided"

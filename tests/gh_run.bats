@@ -25,55 +25,55 @@ setup() {
 		source "$REPO_ROOT/scripts/gh_worktree.sh"
 		# shellcheck source=../scripts/gh_run.sh
 		source "$REPO_ROOT/scripts/gh_run.sh"
-		declare -f _parse_worktree_run_args _show_run_help _worktree_run \
+		declare -f _parse_run_args _show_run_help _worktree_run \
 			_split_args _git_repo_path _worktree_create _run_in_worktree
 	)"
 }
 
 # ---------------------------------------------------------------------------
-# _parse_worktree_run_args
+# _parse_run_args
 # ---------------------------------------------------------------------------
 
-@test "_parse_worktree_run_args: captures run ID from positional arg" {
+@test "_parse_run_args: captures run ID from positional arg" {
 	local id=""
-	_parse_worktree_run_args id 123
+	_parse_run_args id 123
 
 	[[ "$id" == "123" ]]
 }
 
-@test "_parse_worktree_run_args: strips leading # from run ID" {
+@test "_parse_run_args: strips leading # from run ID" {
 	local id=""
-	_parse_worktree_run_args id "#123"
+	_parse_run_args id "#123"
 
 	[[ "$id" == "123" ]]
 }
 
-@test "_parse_worktree_run_args: defaults to empty when no args given" {
+@test "_parse_run_args: defaults to empty when no args given" {
 	local id=""
-	_parse_worktree_run_args id
+	_parse_run_args id
 
 	[[ -z "$id" ]]
 }
 
-@test "_parse_worktree_run_args: returns error for unknown flags" {
+@test "_parse_run_args: returns error for unknown flags" {
 	local id=""
-	run _parse_worktree_run_args id --foo
+	run _parse_run_args id --foo
 
 	[[ "$status" -eq 1 ]]
 	[[ "$output" == *"unknown flag '--foo'"* ]]
 }
 
-@test "_parse_worktree_run_args: returns error for unexpected non-numeric arg" {
+@test "_parse_run_args: returns error for unexpected non-numeric arg" {
 	local id=""
-	run _parse_worktree_run_args id foo
+	run _parse_run_args id foo
 
 	[[ "$status" -eq 1 ]]
 	[[ "$output" == *"unexpected argument 'foo'"* ]]
 }
 
-@test "_parse_worktree_run_args: returns error for second positional arg" {
+@test "_parse_run_args: returns error for second positional arg" {
 	local id=""
-	run _parse_worktree_run_args id 123 456
+	run _parse_run_args id 123 456
 
 	[[ "$status" -eq 1 ]]
 	[[ "$output" == *"unexpected argument '456'"* ]]

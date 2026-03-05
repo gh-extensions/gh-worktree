@@ -7,8 +7,8 @@ set -euo pipefail
 # Extracts the issue number (first positional numeric arg, strips leading #).
 # Unknown flags produce an error.
 #
-# Usage: _parse_worktree_issue_args num_ref [args...]
-_parse_worktree_issue_args() {
+# Usage: _parse_issue_args num_ref [args...]
+_parse_issue_args() {
 	local -n _pwia_num="$1"
 	shift
 
@@ -75,7 +75,7 @@ _worktree_issue() {
 	_split_args args cmd "$@"
 
 	local issue_number=""
-	_parse_worktree_issue_args issue_number "${args[@]}"
+	_parse_issue_args issue_number "${args[@]}"
 
 	if [[ -z "$issue_number" ]]; then
 		gum log --level error "No issue number provided"

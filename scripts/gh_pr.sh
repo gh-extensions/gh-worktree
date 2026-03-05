@@ -7,8 +7,8 @@ set -euo pipefail
 # Extracts the PR number (first positional numeric arg, strips leading #).
 # Unknown flags produce an error.
 #
-# Usage: _parse_worktree_pr_args num_ref [args...]
-_parse_worktree_pr_args() {
+# Usage: _parse_pr_args num_ref [args...]
+_parse_pr_args() {
 	local -n _pwpa_num="$1"
 	shift
 
@@ -74,7 +74,7 @@ _worktree_pr() {
 	_split_args args cmd "$@"
 
 	local pr_number=""
-	_parse_worktree_pr_args pr_number "${args[@]}"
+	_parse_pr_args pr_number "${args[@]}"
 
 	if [[ -z "$pr_number" ]]; then
 		gum log --level error "No pull request number provided"
