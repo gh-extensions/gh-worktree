@@ -89,13 +89,13 @@ main() {
 
 	case "$command" in
 	pr)
-		_worktree_pr "$@"
+		_gh_pr_exec "$@"
 		;;
 	issue)
-		_worktree_issue "$@"
+		_gh_issue_exec "$@"
 		;;
 	run)
-		_worktree_run "$@"
+		_gh_run_exec "$@"
 		;;
 	--version | -V)
 		_show_version

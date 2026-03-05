@@ -62,8 +62,8 @@ EOF
 # Creates a new branch from the default branch, creates a worktree, and
 # runs the command inside.
 #
-# Usage: _worktree_issue [ISSUE_NUMBER] [-- command]
-_worktree_issue() {
+# Usage: _gh_issue_exec [ISSUE_NUMBER] [-- command]
+_gh_issue_exec() {
 	case "${1:-}" in
 	--help | -h | help)
 		_show_issue_help

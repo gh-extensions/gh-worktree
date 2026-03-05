@@ -61,8 +61,8 @@ EOF
 #
 # Fetches the PR head branch, creates a worktree, and runs the command inside.
 #
-# Usage: _worktree_pr [PR_NUMBER] [-- command]
-_worktree_pr() {
+# Usage: _gh_pr_exec [PR_NUMBER] [-- command]
+_gh_pr_exec() {
 	case "${1:-}" in
 	--help | -h | help)
 		_show_pr_help

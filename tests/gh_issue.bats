@@ -28,7 +28,7 @@ setup() {
 		source "$REPO_ROOT/scripts/gh_worktree.sh"
 		# shellcheck source=../scripts/gh_issue.sh
 		source "$REPO_ROOT/scripts/gh_issue.sh"
-		declare -f _parse_issue_args _show_issue_help _worktree_issue \
+		declare -f _parse_issue_args _show_issue_help _gh_issue_exec \
 			_split_args _git_repo_path _worktree_create _run_in_worktree
 	)"
 }
@@ -95,23 +95,23 @@ setup() {
 }
 
 # ---------------------------------------------------------------------------
-# _worktree_issue
+# _gh_issue_exec
 # ---------------------------------------------------------------------------
 
-@test "_worktree_issue: shows help with --help flag" {
-	run _worktree_issue --help
+@test "_gh_issue_exec: shows help with --help flag" {
+	run _gh_issue_exec --help
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == *"issue"* ]]
 }
 
-@test "_worktree_issue: errors when no issue number provided" {
-	run _worktree_issue
+@test "_gh_issue_exec: errors when no issue number provided" {
+	run _gh_issue_exec
 
 	[[ "$status" -eq 1 ]]
 }
 
-@test "_worktree_issue: calls _worktree_create with correct args" {
+@test "_gh_issue_exec: calls _worktree_create with correct args" {
 	gum() {
 		case "$1" in
 		spin)
@@ -130,7 +130,7 @@ setup() {
 
 	_run_in_worktree() { echo "RUN:path=$1"; }
 
-	run _worktree_issue 55
+	run _gh_issue_exec 55
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == *"name=issue-55"* ]]
@@ -138,7 +138,7 @@ setup() {
 	[[ "$output" == *"branch="* ]]
 }
 
-@test "_worktree_issue: forwards passthrough command to _run_in_worktree" {
+@test "_gh_issue_exec: forwards passthrough command to _run_in_worktree" {
 	gum() {
 		case "$1" in
 		spin)
@@ -158,7 +158,7 @@ setup() {
 		echo "CMD:$*"
 	}
 
-	run _worktree_issue 55 -- gh ai issue chat 55
+	run _gh_issue_exec 55 -- gh ai issue chat 55
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == *"CMD:gh ai issue chat 55"* ]]

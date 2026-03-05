@@ -25,7 +25,7 @@ setup() {
 		source "$REPO_ROOT/scripts/gh_worktree.sh"
 		# shellcheck source=../scripts/gh_run.sh
 		source "$REPO_ROOT/scripts/gh_run.sh"
-		declare -f _parse_run_args _show_run_help _worktree_run \
+		declare -f _parse_run_args _show_run_help _gh_run_exec \
 			_split_args _git_repo_path _worktree_create _run_in_worktree
 	)"
 }
@@ -92,23 +92,23 @@ setup() {
 }
 
 # ---------------------------------------------------------------------------
-# _worktree_run
+# _gh_run_exec
 # ---------------------------------------------------------------------------
 
-@test "_worktree_run: shows help with --help flag" {
-	run _worktree_run --help
+@test "_gh_run_exec: shows help with --help flag" {
+	run _gh_run_exec --help
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == *"run"* ]]
 }
 
-@test "_worktree_run: errors when no run ID provided" {
-	run _worktree_run
+@test "_gh_run_exec: errors when no run ID provided" {
+	run _gh_run_exec
 
 	[[ "$status" -eq 1 ]]
 }
 
-@test "_worktree_run: errors when metadata fetch fails" {
+@test "_gh_run_exec: errors when metadata fetch fails" {
 	gum() {
 		case "$1" in
 		spin)
@@ -124,13 +124,13 @@ setup() {
 	gh() { return 1; }
 	export -f gh
 
-	run _worktree_run 123
+	run _gh_run_exec 123
 
 	[[ "$status" -eq 1 ]]
 	[[ "$output" == *"Failed to fetch workflow run"* ]]
 }
 
-@test "_worktree_run: calls _worktree_create with correct args including SHA" {
+@test "_gh_run_exec: calls _worktree_create with correct args including SHA" {
 	gum() {
 		case "$1" in
 		spin)
@@ -156,7 +156,7 @@ setup() {
 
 	_run_in_worktree() { echo "RUN:path=$1"; }
 
-	run _worktree_run 123
+	run _gh_run_exec 123
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == *"name=run-123"* ]]
@@ -165,7 +165,7 @@ setup() {
 	[[ "$output" == *"branch="* ]]
 }
 
-@test "_worktree_run: forwards passthrough command to _run_in_worktree" {
+@test "_gh_run_exec: forwards passthrough command to _run_in_worktree" {
 	gum() {
 		case "$1" in
 		spin)
@@ -192,7 +192,7 @@ setup() {
 		echo "CMD:$*"
 	}
 
-	run _worktree_run 123 -- gh ai run chat 123
+	run _gh_run_exec 123 -- gh ai run chat 123
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == *"CMD:gh ai run chat 123"* ]]

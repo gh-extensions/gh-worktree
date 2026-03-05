@@ -63,8 +63,8 @@ EOF
 # Fetches the run's head branch and SHA, creates a worktree pinned to the
 # exact commit, and runs the command inside.
 #
-# Usage: _worktree_run [RUN_ID] [-- command]
-_worktree_run() {
+# Usage: _gh_run_exec [RUN_ID] [-- command]
+_gh_run_exec() {
 	case "${1:-}" in
 	--help | -h | help)
 		_show_run_help
