@@ -2,6 +2,33 @@
 
 set -euo pipefail
 
+# Resolve the base directory for worktrees relative to the repo root.
+#
+# Resolution order:
+#   1. GH_WORKTREE_DIR env var
+#   2. gh config get worktree.dir
+#   3. Default: .github/worktrees
+#
+# Usage: base=$(_worktree_base_dir <cwd>)
+_worktree_base_dir() {
+	local cwd="$1"
+	local dir
+
+	if [[ -n "${GH_WORKTREE_DIR:-}" ]]; then
+		dir="$GH_WORKTREE_DIR"
+	else
+		dir=$(gh config get worktree.dir 2>/dev/null || true)
+		dir="${dir:-.github/worktrees}"
+	fi
+
+	# Resolve relative paths against the repo root
+	if [[ "$dir" != /* ]]; then
+		dir="${cwd}/${dir}"
+	fi
+
+	printf '%s' "$dir"
+}
+
 # Check if a worktree has uncommitted changes (untracked, modified, staged)
 #
 # Returns 0 if dirty, 1 if clean.
@@ -45,8 +72,10 @@ _worktree_create() {
 	local head_sha="${4:-}"
 	local branch="${5:-}"
 
-	local worktree_path="${cwd}/.worktrees/${name}"
-	mkdir -p "${cwd}/.worktrees"
+	local base_dir
+	base_dir=$(_worktree_base_dir "$cwd")
+	local worktree_path="${base_dir}/${name}"
+	mkdir -p "$base_dir"
 
 	local wt_list
 	wt_list=$(git -C "$cwd" worktree list --porcelain)
