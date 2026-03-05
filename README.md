@@ -169,6 +169,27 @@ gh worktree pr 42 -- gh ai pr chat 42
         └── gh-ai receives the PR context and runs inside the worktree
 ```
 
+## Integrations
+
+### gh-fzf
+
+[gh-fzf](https://github.com/gh-extensions/gh-fzf) is a GitHub CLI extension
+that wraps `gh` commands in an interactive fuzzy finder. Source
+`extras/gh_fzf.sh` in your shell config to register `gh worktree` keybinds via
+`GH_FZF_*_OPTS`.
+
+```bash
+source "$HOME/.local/share/gh/extensions/gh-worktree/extras/gh_fzf.sh"
+```
+
+| Context        | Key     | Action                                                         |
+| -------------- | ------- | -------------------------------------------------------------- |
+| `gh-fzf pr`    | `alt-S` | Open a new tmux session with a worktree for the selected PR    |
+| `gh-fzf issue` | `alt-S` | Open a new tmux session with a worktree for the selected issue |
+| `gh-fzf run`   | `alt-S` | Open a new tmux session with a worktree for the selected run   |
+
+Bindings are only registered when inside tmux.
+
 ## See Also
 
 - [gh-ai](https://github.com/gh-extensions/gh-ai) — AI-powered copilot for the GitHub CLI
