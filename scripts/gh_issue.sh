@@ -79,7 +79,7 @@ _gh_issue_exec() {
 
 	if [[ -z "$issue_number" ]]; then
 		gum log --level error "No issue number provided"
-		gum log --level info "Usage: gh worktree issue <number> [-- <command>]"
+		gum log --level info "Usage: gh worktree issue <ISSUE_NUMBER> [-- <command>]"
 		return 1
 	fi
 
@@ -91,10 +91,9 @@ _gh_issue_exec() {
 		gh repo view --json defaultBranchRef -q '.defaultBranchRef.name' 2>/dev/null ||
 		echo "main")
 
-	local name="issue-${issue_number}"
 	local worktree_path
-	worktree_path=$(gum spin --show-error --title "Creating worktree for issue #${issue_number}..." -- \
-		bash "$_gh_worktree_source_dir/scripts/gh_worktree.sh" create "$cwd" "$name" "$default_branch" "" "")
+	worktree_path=$(gum spin --show-error --title "Creating worktree for GitHub issue #${issue_number}..." -- \
+		"$_gh_worktree_source_dir/scripts/gh_worktree.sh" create "$cwd" "issue-$issue_number" "$default_branch" "" "")
 
 	_run_in_worktree "$worktree_path" "${cmd[@]}"
 }

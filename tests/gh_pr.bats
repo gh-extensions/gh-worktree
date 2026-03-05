@@ -9,7 +9,13 @@ REPO_ROOT="$(cd "$(dirname "$BATS_TEST_DIRNAME")" && pwd)"
 
 setup() {
 	export HOME="$BATS_TEST_TMPDIR"
-	export _gh_worktree_source_dir="$REPO_ROOT"
+	# Point to a stub scripts/ dir so gh_worktree.sh dispatches to exported
+	# _worktree_* function mocks without running real git commands.
+	export _gh_worktree_source_dir="$BATS_TEST_TMPDIR"
+	mkdir -p "$BATS_TEST_TMPDIR/scripts"
+	printf '#!/usr/bin/env bash\ncmd="${1:-}"; shift\n"_worktree_${cmd}" "$@"\n' \
+		> "$BATS_TEST_TMPDIR/scripts/gh_worktree.sh"
+	chmod +x "$BATS_TEST_TMPDIR/scripts/gh_worktree.sh"
 
 	gum() { if [[ "$1" == "log" ]]; then shift; shift; shift; echo "$@"; fi; }
 	gh() { echo ""; }
@@ -18,18 +24,7 @@ setup() {
 		"rev-parse --show-toplevel") echo "$BATS_TEST_TMPDIR" ;;
 		esac
 	}
-	# Intercept `bash .../gh_worktree.sh <subcmd> <args>` and dispatch to the
-	# local bash-function mock so gum spin can be tested without a subprocess.
-	bash() {
-		local script="${1:-}"; shift || true
-		if [[ "$script" == */gh_worktree.sh ]]; then
-			local subcmd="${1:-}"; shift || true
-			"_worktree_${subcmd}" "$@"
-		else
-			command bash "$script" "$@"
-		fi
-	}
-	export -f gum gh git bash
+	export -f gum gh git
 
 	# shellcheck disable=SC2155
 	eval "$(
@@ -139,7 +134,7 @@ setup() {
 	run _gh_pr_exec 42
 
 	[[ "$status" -eq 1 ]]
-	[[ "$output" == *"Failed to fetch pull request"* ]]
+	[[ "$output" == *"Failed to fetch GitHub pull request"* ]]
 }
 
 @test "_gh_pr_exec: calls _worktree_create and _run_in_worktree with correct args" {
