@@ -71,8 +71,8 @@ _gh_issue_exec() {
 		;;
 	esac
 
-	local args=() cmd=()
-	_split_args args cmd "$@"
+	local args=() passthrough=()
+	_split_args args passthrough "$@"
 
 	local issue_number=""
 	_parse_issue_args issue_number "${args[@]}"
@@ -97,6 +97,7 @@ _gh_issue_exec() {
 	fi
 
 	local worktree_path
+	# shellcheck disable=SC2154 # _gh_worktree_source_dir is set by the sourcing script
 	worktree_path=$(gum spin --show-error --title "Creating worktree for GitHub issue #${issue_number}..." -- \
 		"$_gh_worktree_source_dir/scripts/gh_worktree.sh" create "$cwd" "issue-$issue_number" "$default_branch" "" "")
 
@@ -105,5 +106,5 @@ _gh_issue_exec() {
 		return 1
 	fi
 
-	_run_in_worktree "$worktree_path" "${cmd[@]}"
+	_run_in_worktree "$worktree_path" "${passthrough[@]}"
 }

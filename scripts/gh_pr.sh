@@ -70,8 +70,8 @@ _gh_pr_exec() {
 		;;
 	esac
 
-	local args=() cmd=()
-	_split_args args cmd "$@"
+	local args=() passthrough=()
+	_split_args args passthrough "$@"
 
 	local pr_number=""
 	_parse_pr_args pr_number "${args[@]}"
@@ -98,6 +98,7 @@ _gh_pr_exec() {
 	head_ref=$(printf '%s' "$meta" | jq -r '.headRefName')
 
 	local worktree_path
+	# shellcheck disable=SC2154 # _gh_worktree_source_dir is set by the sourcing script
 	worktree_path=$(gum spin --show-error --title "Creating worktree for GitHub pull request #${pr_number}..." -- \
 		"$_gh_worktree_source_dir/scripts/gh_worktree.sh" create "$cwd" "pull-$pr_number" "$head_ref" "" "$head_ref")
 
@@ -106,5 +107,5 @@ _gh_pr_exec() {
 		return 1
 	fi
 
-	_run_in_worktree "$worktree_path" "${cmd[@]}"
+	_run_in_worktree "$worktree_path" "${passthrough[@]}"
 }

@@ -72,8 +72,8 @@ _gh_run_exec() {
 		;;
 	esac
 
-	local args=() cmd=()
-	_split_args args cmd "$@"
+	local args=() passthrough=()
+	_split_args args passthrough "$@"
 
 	local run_id=""
 	_parse_run_args run_id "${args[@]}"
@@ -102,6 +102,7 @@ _gh_run_exec() {
 
 	local name="run-${run_id}"
 	local worktree_path
+	# shellcheck disable=SC2154 # _gh_worktree_source_dir is set by the sourcing script
 	worktree_path=$(gum spin --show-error --title "Creating worktree for GitHub workflow run #${run_id}..." -- \
 		"$_gh_worktree_source_dir/scripts/gh_worktree.sh" create "$cwd" "$name" "$head_branch" "$head_sha" "")
 
@@ -110,5 +111,5 @@ _gh_run_exec() {
 		return 1
 	fi
 
-	_run_in_worktree "$worktree_path" "${cmd[@]}"
+	_run_in_worktree "$worktree_path" "${passthrough[@]}"
 }
