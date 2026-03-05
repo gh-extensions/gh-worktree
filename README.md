@@ -155,11 +155,8 @@ gh worktree run 123 -- gh ai run chat 123
 ```text
 gh worktree pr 42 -- gh ai pr chat 42
   └── gh-worktree creates the worktree and runs the command inside it
-        └── gh-ai detects it is inside a worktree and skips its own worktree setup
+        └── gh-ai receives the PR context and runs inside the worktree
 ```
-
-`gh-ai` automatically detects when it is running inside an existing git worktree
-and skips its own worktree lifecycle — no duplicate setup, no conflicts.
 
 ## See Also
 
