@@ -194,7 +194,8 @@ _run_in_worktree() {
 	shift
 	local cmd=("$@")
 
-	trap '_worktree_remove "$worktree_path"' EXIT
+	# shellcheck disable=SC2064
+	trap "_worktree_remove $(printf '%q' "$worktree_path")" EXIT
 
 	cd "$worktree_path"
 
