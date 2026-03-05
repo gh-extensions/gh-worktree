@@ -90,7 +90,7 @@ _gh_run_exec() {
 	_git_repo_path cwd || return 1
 
 	local meta
-	meta=$(gum spin --show-error --title "Fetching GitHub workflow run #${run_id} metadata..." -- \
+	meta=$(gum spin --title "Fetching GitHub workflow run #${run_id} metadata..." -- \
 		gh run view "$run_id" --json headBranch,headSha || true)
 
 	if [[ -z "$meta" ]]; then

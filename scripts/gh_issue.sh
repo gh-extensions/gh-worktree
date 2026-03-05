@@ -92,7 +92,8 @@ _gh_issue_exec() {
 	default_branch=$(git -C "$cwd" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null)
 	default_branch="${default_branch#refs/remotes/origin/}"
 	if [[ -z "$default_branch" ]]; then
-		default_branch=$(gh repo view --json defaultBranchRef -q '.defaultBranchRef.name' 2>/dev/null || true)
+		default_branch=$(gum spin --title "Fetching default branch..." -- \
+			gh repo view --json defaultBranchRef -q '.defaultBranchRef.name' || true)
 	fi
 	if [[ -z "$default_branch" ]]; then
 		default_branch="main"

@@ -88,7 +88,7 @@ _gh_pr_exec() {
 	_git_repo_path cwd || return 1
 
 	local meta
-	meta=$(gum spin --show-error --title "Fetching GitHub pull request #${pr_number} metadata..." -- \
+	meta=$(gum spin --title "Fetching GitHub pull request #${pr_number} metadata..." -- \
 		gh pr view "$pr_number" --json headRefName || true)
 
 	if [[ -z "$meta" ]]; then
