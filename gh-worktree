@@ -17,8 +17,8 @@ set -euo pipefail
 
 _source_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
-# shellcheck source=scripts/worktree_core.sh
-source "$_source_dir/scripts/worktree_core.sh"
+# shellcheck source=scripts/gh_worktree.sh
+source "$_source_dir/scripts/gh_worktree.sh"
 
 # Resolve the git repository root, or exit with an error.
 _repo_root() {
