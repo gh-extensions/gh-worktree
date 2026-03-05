@@ -131,11 +131,12 @@ _worktree_remove() {
 	fi
 
 	if _worktree_is_dirty "$worktree_path"; then
-		local wt_name
-		wt_name=$(basename "$worktree_path")
+		local worktree_name
+		worktree_name=$(basename "$worktree_path")
+
 		git -C "$worktree_path" add -A 2>/dev/null || true
-		if git -C "$worktree_path" stash push -m "gh-worktree: auto-stash '${wt_name}'" 2>/dev/null; then
-			gum log --level info "Auto-stashed uncommitted changes from '${wt_name}' — recover with: git stash list"
+		if git -C "$worktree_path" stash push -m "gh-worktree: auto-stash '${worktree_name}'" 2>/dev/null; then
+			gum log --level info "Auto-stashed uncommitted changes from '${worktree_name}' — recover with: git stash list"
 		fi
 	fi
 
@@ -192,15 +193,15 @@ _split_args() {
 _run_in_worktree() {
 	local worktree_path="$1"
 	shift
-	local cmd=("$@")
+	local command=("$@")
 
 	# shellcheck disable=SC2064
 	trap "_worktree_remove $(printf '%q' "$worktree_path")" EXIT
 
 	cd "$worktree_path"
 
-	if [[ ${#cmd[@]} -gt 0 ]]; then
-		"${cmd[@]}"
+	if [[ ${#command[@]} -gt 0 ]]; then
+		"${command[@]}"
 	else
 		"$SHELL"
 	fi
@@ -210,12 +211,25 @@ _run_in_worktree() {
 #
 # Usage: gh_worktree.sh create <args...>
 #        gh_worktree.sh remove <worktree_path>
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-	cmd="${1:-}"
+main() {
+	local command
+	command="${1:-}"
 	shift || true
-	case "$cmd" in
-	create) _worktree_create "$@" ;;
-	remove) _worktree_remove "$@" ;;
-	*) echo "gh_worktree.sh: unknown command '${cmd}'" >&2; exit 1 ;;
+
+	case "$command" in
+	create)
+		_worktree_create "$@"
+		;;
+	remove)
+		_worktree_remove "$@"
+		;;
+	*)
+		gum log --level error "unknown command '${command}'"
+		exit 1
+		;;
 	esac
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+	main "$@"
 fi

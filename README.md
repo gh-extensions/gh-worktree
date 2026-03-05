@@ -73,11 +73,11 @@ right code without touching your working tree or switching branches.
 
 The worktree name and branch strategy depend on the resource type:
 
-| Command                  | Worktree name | Branch                                                        |
-| ------------------------ | ------------- | ------------------------------------------------------------- |
-| `gh worktree pr 42`      | `pull-42`     | Checks out the PR head branch directly                        |
-| `gh worktree issue 55`   | `issue-55`    | Creates a new `issue-55` branch from `origin/<default>`       |
-| `gh worktree run 123`    | `run-123`     | Creates a new `run-123` branch pinned to the run's head SHA   |
+| Command                | Worktree name | Branch                                                      |
+| ---------------------- | ------------- | ----------------------------------------------------------- |
+| `gh worktree pr 42`    | `pull-42`     | Checks out the PR head branch directly                      |
+| `gh worktree issue 55` | `issue-55`    | Creates a new `issue-55` branch from `origin/<default>`     |
+| `gh worktree run 123`  | `run-123`     | Creates a new `run-123` branch pinned to the run's head SHA |
 
 **PR worktrees** check out the PR's head branch directly. If the branch already
 exists locally it is fast-forwarded to the remote tip first (unless it has
@@ -110,9 +110,9 @@ reflog.
 
 Override the worktree base directory via environment variable or `gh config`.
 
-| Key             | Default               | Description                       |
-| --------------- | --------------------- | --------------------------------- |
-| `worktree.dir`  | `.github/worktrees`   | Base directory for all worktrees  |
+| Key            | Default             | Description                      |
+| -------------- | ------------------- | -------------------------------- |
+| `worktree.dir` | `.github/worktrees` | Base directory for all worktrees |
 
 The `GH_WORKTREE_DIR` environment variable takes priority over `gh config`.
 
