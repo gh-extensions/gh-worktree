@@ -105,5 +105,10 @@ _gh_run_exec() {
 	worktree_path=$(gum spin --show-error --title "Creating worktree for GitHub workflow run #${run_id}..." -- \
 		"$_gh_worktree_source_dir/scripts/gh_worktree.sh" create "$cwd" "$name" "$head_branch" "$head_sha" "")
 
+	if [[ -z "$worktree_path" ]]; then
+		gum log --level error "Failed to create worktree for GitHub workflow run #${run_id}"
+		return 1
+	fi
+
 	_run_in_worktree "$worktree_path" "${cmd[@]}"
 }

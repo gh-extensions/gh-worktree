@@ -46,7 +46,7 @@ USAGE:
     gh worktree pr <PR_NUMBER> [-- <command>]
 
 DESCRIPTION:
-    Fetches the PR head branch, creates a git worktree tracking it,
+    Fetches the pull request head branch, creates a git worktree tracking it,
     and runs the given command inside the worktree (or opens $SHELL when
     no command is given). The worktree is removed when the command exits.
 
@@ -59,7 +59,7 @@ EOF
 
 # PR worktree subcommand
 #
-# Fetches the PR head branch, creates a worktree, and runs the command inside.
+# Fetches the pull request head branch, creates a worktree, and runs the command inside.
 #
 # Usage: _gh_pr_exec [PR_NUMBER] [-- command]
 _gh_pr_exec() {
@@ -100,6 +100,11 @@ _gh_pr_exec() {
 	local worktree_path
 	worktree_path=$(gum spin --show-error --title "Creating worktree for GitHub pull request #${pr_number}..." -- \
 		"$_gh_worktree_source_dir/scripts/gh_worktree.sh" create "$cwd" "pull-$pr_number" "$head_ref" "" "$head_ref")
+
+	if [[ -z "$worktree_path" ]]; then
+		gum log --level error "Failed to create worktree for GitHub pull request #${pr_number}"
+		return 1
+	fi
 
 	_run_in_worktree "$worktree_path" "${cmd[@]}"
 }

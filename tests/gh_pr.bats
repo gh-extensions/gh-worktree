@@ -137,6 +137,35 @@ setup() {
 	[[ "$output" == *"Failed to fetch GitHub pull request"* ]]
 }
 
+@test "_gh_pr_exec: errors when worktree creation returns empty path" {
+	gum() {
+		case "$1" in
+		spin)
+			while [[ $# -gt 0 && "$1" != "--" ]]; do shift; done
+			[[ $# -gt 0 ]] && shift
+			"$@"
+			;;
+		log) shift; shift; shift; echo "$@" ;;
+		esac
+	}
+	export -f gum
+
+	gh() {
+		case "$1 $2" in
+		"pr view") printf '{"headRefName":"feature-branch"}' ;;
+		esac
+	}
+	export -f gh
+
+	_worktree_create() { :; }
+	export -f _worktree_create
+
+	run _gh_pr_exec 42
+
+	[[ "$status" -eq 1 ]]
+	[[ "$output" == *"Failed to create worktree"* ]]
+}
+
 @test "_gh_pr_exec: calls _worktree_create and _run_in_worktree with correct args" {
 	gum() {
 		case "$1" in

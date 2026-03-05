@@ -28,6 +28,9 @@ _check_dependencies() {
 	if ! command -v jq &>/dev/null; then
 		missing+=("jq   — https://jqlang.github.io/jq")
 	fi
+	if ! command -v git &>/dev/null; then
+		missing+=("git  — https://git-scm.com")
+	fi
 
 	if [[ ${#missing[@]} -gt 0 ]]; then
 		echo "gh-worktree: missing required dependencies:" >&2
@@ -55,9 +58,9 @@ _show_help() {
 gh worktree — spin up isolated git worktrees for pull requests, issues, and workflow runs
 
 USAGE:
-    gh worktree pr <number>    [-- <command>]
-    gh worktree issue <number> [-- <command>]
-    gh worktree run <id>       [-- <command>]
+    gh worktree pr <PR_NUMBER>       [-- <command>]
+    gh worktree issue <ISSUE_NUMBER> [-- <command>]
+    gh worktree run <RUN_ID>         [-- <command>]
 
 DESCRIPTION:
     Creates a git worktree for the given GitHub resource, runs the command
@@ -73,9 +76,9 @@ FLAGS:
     -V, --version   Print version
 
 SEE ALSO:
-    gh worktree pr --help      # PR worktree usage
-    gh worktree issue --help   # Issue worktree usage
-    gh worktree run --help     # Run worktree usage
+    gh worktree pr --help      # pull request worktree usage
+    gh worktree issue --help   # issue worktree usage
+    gh worktree run --help     # workflow run worktree usage
 EOF
 }
 

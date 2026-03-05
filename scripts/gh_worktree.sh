@@ -90,7 +90,7 @@ _worktree_create() {
 
 	# Refuse if the branch is already checked out elsewhere
 	if grep -qxF "branch refs/heads/${checkout_branch}" <<<"$wt_list"; then
-		echo "_worktree_create: branch '${checkout_branch}' is already checked out in another worktree" >&2
+		gum log --level error "branch '${checkout_branch}' is already checked out in another worktree"
 		return 1
 	fi
 
@@ -135,14 +135,14 @@ _worktree_remove() {
 		wt_name=$(basename "$worktree_path")
 		git -C "$worktree_path" add -A 2>/dev/null || true
 		if git -C "$worktree_path" stash push -m "gh-worktree: auto-stash '${wt_name}'" 2>/dev/null; then
-			echo "Auto-stashed uncommitted changes from '${wt_name}' — recover with: git stash list" >&2
+			gum log --level info "Auto-stashed uncommitted changes from '${wt_name}' — recover with: git stash list"
 		fi
 	fi
 
 	if _worktree_has_unpushed "$worktree_path"; then
 		local branch
 		branch=$(git -C "$worktree_path" rev-parse --abbrev-ref HEAD 2>/dev/null || true)
-		echo "Warning: branch '${branch}' has unpushed commits — they remain in the reflog" >&2
+		gum log --level warn "branch '${branch}' has unpushed commits — they remain in the reflog"
 	fi
 
 	git -C "$worktree_path" worktree remove -f "$worktree_path" 2>/dev/null || true
@@ -208,11 +208,11 @@ _run_in_worktree() {
 
 # When executed directly (not sourced), dispatch to the named function.
 #
-# Usage: bash gh_worktree.sh create <args...>
-#        bash gh_worktree.sh remove <worktree_path>
+# Usage: gh_worktree.sh create <args...>
+#        gh_worktree.sh remove <worktree_path>
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 	cmd="${1:-}"
-	shift
+	shift || true
 	case "$cmd" in
 	create) _worktree_create "$@" ;;
 	remove) _worktree_remove "$@" ;;

@@ -87,13 +87,23 @@ _gh_issue_exec() {
 	_git_repo_path cwd || return 1
 
 	local default_branch
-	default_branch=$(git -C "$cwd" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|refs/remotes/origin/||' ||
-		gh repo view --json defaultBranchRef -q '.defaultBranchRef.name' 2>/dev/null ||
-		echo "main")
+	default_branch=$(git -C "$cwd" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null)
+	default_branch="${default_branch#refs/remotes/origin/}"
+	if [[ -z "$default_branch" ]]; then
+		default_branch=$(gh repo view --json defaultBranchRef -q '.defaultBranchRef.name' 2>/dev/null || true)
+	fi
+	if [[ -z "$default_branch" ]]; then
+		default_branch="main"
+	fi
 
 	local worktree_path
 	worktree_path=$(gum spin --show-error --title "Creating worktree for GitHub issue #${issue_number}..." -- \
 		"$_gh_worktree_source_dir/scripts/gh_worktree.sh" create "$cwd" "issue-$issue_number" "$default_branch" "" "")
+
+	if [[ -z "$worktree_path" ]]; then
+		gum log --level error "Failed to create worktree for GitHub issue #${issue_number}"
+		return 1
+	fi
 
 	_run_in_worktree "$worktree_path" "${cmd[@]}"
 }

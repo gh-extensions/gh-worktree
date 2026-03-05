@@ -137,6 +137,35 @@ setup() {
 	[[ "$output" == *"Failed to fetch GitHub workflow run"* ]]
 }
 
+@test "_gh_run_exec: errors when worktree creation returns empty path" {
+	gum() {
+		case "$1" in
+		spin)
+			while [[ $# -gt 0 && "$1" != "--" ]]; do shift; done
+			[[ $# -gt 0 ]] && shift
+			"$@"
+			;;
+		log) shift; shift; shift; echo "$@" ;;
+		esac
+	}
+	export -f gum
+
+	gh() {
+		case "$1 $2" in
+		"run view") printf '{"headBranch":"main","headSha":"abc123"}' ;;
+		esac
+	}
+	export -f gh
+
+	_worktree_create() { :; }
+	export -f _worktree_create
+
+	run _gh_run_exec 123
+
+	[[ "$status" -eq 1 ]]
+	[[ "$output" == *"Failed to create worktree"* ]]
+}
+
 @test "_gh_run_exec: calls _worktree_create with correct args including SHA" {
 	gum() {
 		case "$1" in

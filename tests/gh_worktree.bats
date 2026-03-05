@@ -25,8 +25,9 @@ setup() {
 	DEFAULT_BRANCH=$(git -C "$BATS_TEST_TMPDIR/repo" rev-parse --abbrev-ref HEAD)
 	git -C "$WORKTREE_PATH" branch --set-upstream-to="origin/${DEFAULT_BRANCH}" >/dev/null 2>&1
 
+	gum() { if [[ "$1" == "log" ]]; then shift; shift; shift; echo "$@"; fi; }
 	gh() { :; }
-	export -f gh
+	export -f gum gh
 
 	# shellcheck disable=SC2155
 	eval "$(
@@ -317,4 +318,34 @@ teardown() {
 	[[ "$output" == "$BATS_TEST_TMPDIR/custom-worktrees/pull-101" ]]
 	[[ -d "$BATS_TEST_TMPDIR/custom-worktrees/pull-101" ]]
 	unset GH_WORKTREE_DIR
+}
+
+# ---------------------------------------------------------------------------
+# _run_in_worktree
+# ---------------------------------------------------------------------------
+
+@test "_run_in_worktree: changes into the worktree directory and runs command" {
+	run _run_in_worktree "$WORKTREE_PATH" pwd
+
+	[[ "$status" -eq 0 ]]
+	[[ "$output" == *"issue-1"* ]]
+}
+
+@test "_run_in_worktree: passes command arguments correctly" {
+	run _run_in_worktree "$WORKTREE_PATH" echo "hello world"
+
+	[[ "$status" -eq 0 ]]
+	[[ "$output" == *"hello world"* ]]
+}
+
+@test "_run_in_worktree: removes worktree on exit" {
+	run _run_in_worktree "$WORKTREE_PATH" true
+
+	[[ ! -d "$WORKTREE_PATH" ]]
+}
+
+@test "_run_in_worktree: forwards command exit status" {
+	run _run_in_worktree "$WORKTREE_PATH" false
+
+	[[ "$status" -ne 0 ]]
 }

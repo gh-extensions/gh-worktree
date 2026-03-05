@@ -118,6 +118,106 @@ setup() {
 	[[ "$status" -eq 1 ]]
 }
 
+@test "_gh_issue_exec: errors when worktree creation returns empty path" {
+	gum() {
+		case "$1" in
+		spin)
+			while [[ $# -gt 0 && "$1" != "--" ]]; do shift; done
+			[[ $# -gt 0 ]] && shift
+			"$@"
+			;;
+		log) shift; shift; shift; echo "$@" ;;
+		esac
+	}
+	export -f gum
+
+	_worktree_create() { :; }
+	export -f _worktree_create
+
+	run _gh_issue_exec 55
+
+	[[ "$status" -eq 1 ]]
+	[[ "$output" == *"Failed to create worktree"* ]]
+}
+
+@test "_gh_issue_exec: falls back to gh repo view when origin/HEAD not set" {
+	git() {
+		local _args=("$@")
+		[[ "${_args[0]}" == "-C" ]] && _args=("${_args[@]:2}")
+		case "${_args[0]} ${_args[1]}" in
+		"rev-parse --show-toplevel") echo "$BATS_TEST_TMPDIR" ;;
+		"symbolic-ref refs/remotes/origin/HEAD") return 1 ;;
+		esac
+	}
+	export -f git
+
+	gh() {
+		case "$1 $2" in
+		"repo view") echo "develop" ;;
+		esac
+	}
+	export -f gh
+
+	gum() {
+		case "$1" in
+		spin)
+			while [[ $# -gt 0 && "$1" != "--" ]]; do shift; done
+			[[ $# -gt 0 ]] && shift
+			"$@"
+			;;
+		log) ;;
+		esac
+	}
+	export -f gum
+
+	_worktree_create() { echo "ARGS:remote_ref=$3"; }
+	export -f _worktree_create
+
+	_run_in_worktree() { echo "RUN:path=$1"; }
+
+	run _gh_issue_exec 55
+
+	[[ "$status" -eq 0 ]]
+	[[ "$output" == *"remote_ref=develop"* ]]
+}
+
+@test "_gh_issue_exec: falls back to main when all branch detection fails" {
+	git() {
+		local _args=("$@")
+		[[ "${_args[0]}" == "-C" ]] && _args=("${_args[@]:2}")
+		case "${_args[0]} ${_args[1]}" in
+		"rev-parse --show-toplevel") echo "$BATS_TEST_TMPDIR" ;;
+		"symbolic-ref refs/remotes/origin/HEAD") return 1 ;;
+		esac
+	}
+	export -f git
+
+	gh() { return 1; }
+	export -f gh
+
+	gum() {
+		case "$1" in
+		spin)
+			while [[ $# -gt 0 && "$1" != "--" ]]; do shift; done
+			[[ $# -gt 0 ]] && shift
+			"$@"
+			;;
+		log) ;;
+		esac
+	}
+	export -f gum
+
+	_worktree_create() { echo "ARGS:remote_ref=$3"; }
+	export -f _worktree_create
+
+	_run_in_worktree() { echo "RUN:path=$1"; }
+
+	run _gh_issue_exec 55
+
+	[[ "$status" -eq 0 ]]
+	[[ "$output" == *"remote_ref=main"* ]]
+}
+
 @test "_gh_issue_exec: calls _worktree_create with correct args" {
 	gum() {
 		case "$1" in
