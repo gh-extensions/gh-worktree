@@ -195,15 +195,15 @@ _split_args() {
 _run_in_worktree() {
 	local worktree_path="$1"
 	shift
-	local command=("$@")
+	local cmd=("$@")
 
 	# shellcheck disable=SC2064
 	trap "_worktree_remove $(printf '%q' "$worktree_path")" EXIT
 
 	cd "$worktree_path"
 
-	if [[ ${#command[@]} -gt 0 ]]; then
-		"${command[@]}"
+	if [[ ${#cmd[@]} -gt 0 ]]; then
+		"${cmd[@]}"
 	else
 		"$SHELL"
 	fi

@@ -31,6 +31,14 @@ gh worktree run <RUN_ID>         [-- <command>]
 When no command is given after `--`, opens `$SHELL` in the worktree.
 The worktree is removed when the command (or shell) exits.
 
+```bash
+gh worktree --help               # show help
+gh worktree --version            # print version
+gh worktree pr --help            # pull request subcommand help
+gh worktree issue --help         # issue subcommand help
+gh worktree run --help           # workflow run subcommand help
+```
+
 ### Pull Request
 
 Fetches the PR head branch, creates a git worktree tracking it, and runs the
