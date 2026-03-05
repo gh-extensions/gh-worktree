@@ -92,9 +92,9 @@ _gh_issue_exec() {
 		echo "main")
 
 	local name="issue-${issue_number}"
+	gum log --level info "Creating worktree for issue #${issue_number}..."
 	local worktree_path
-	worktree_path=$(gum spin --title "Creating worktree for issue #${issue_number}..." -- \
-		_worktree_create "$cwd" "$name" "$default_branch" "" "")
+	worktree_path=$(_worktree_create "$cwd" "$name" "$default_branch" "" "")
 
 	_run_in_worktree "$worktree_path" "${cmd[@]}"
 }

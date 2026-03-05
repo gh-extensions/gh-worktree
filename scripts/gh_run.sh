@@ -101,9 +101,9 @@ _gh_run_exec() {
 	head_sha=$(printf '%s' "$meta" | jq -r '.headSha')
 
 	local name="run-${run_id}"
+	gum log --level info "Creating worktree for run #${run_id}..."
 	local worktree_path
-	worktree_path=$(gum spin --title "Creating worktree for run #${run_id}..." -- \
-		_worktree_create "$cwd" "$name" "$head_branch" "$head_sha" "")
+	worktree_path=$(_worktree_create "$cwd" "$name" "$head_branch" "$head_sha" "")
 
 	_run_in_worktree "$worktree_path" "${cmd[@]}"
 }
