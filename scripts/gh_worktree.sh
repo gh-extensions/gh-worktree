@@ -97,14 +97,18 @@ _gh_worktree_create() {
 		return 1
 	fi
 
+	local git_err=""
 	if git -C "$cwd" show-ref --verify --quiet "refs/heads/${checkout_branch}"; then
 		# Fast-forward the local branch to the remote tip before checking out.
 		# If diverged (local commits ahead), the fetch refuses and the worktree
 		# opens at the local state instead.
-		git -C "$cwd" fetch origin "${checkout_branch}:${checkout_branch}" >&2 || true
-		git -C "$cwd" worktree add "$worktree_path" "${checkout_branch}" >&2
+		git -C "$cwd" fetch origin "${checkout_branch}:${checkout_branch}" 2>/dev/null || true
+		if ! git_err=$(git -C "$cwd" worktree add "$worktree_path" "${checkout_branch}" 2>&1); then
+			gum log --level error "$git_err"
+			return 1
+		fi
 	else
-		git -C "$cwd" fetch origin "$remote_ref" >&2 || true
+		git -C "$cwd" fetch origin "$remote_ref" 2>/dev/null || true
 
 		# Pin to SHA when provided (run sessions), otherwise use remote branch tip.
 		local git_ref="${head_sha:-origin/${remote_ref}}"
@@ -114,7 +118,10 @@ _gh_worktree_create() {
 		# --no-track to avoid wiring a local branch to the wrong remote ref.
 		local track_flag=""
 		[[ "$checkout_branch" != "$branch" ]] && track_flag="--no-track"
-		git -C "$cwd" worktree add ${track_flag:+"$track_flag"} -b "${checkout_branch}" "$worktree_path" "$git_ref" >&2
+		if ! git_err=$(git -C "$cwd" worktree add ${track_flag:+"$track_flag"} -b "${checkout_branch}" "$worktree_path" "$git_ref" 2>&1); then
+			gum log --level error "$git_err"
+			return 1
+		fi
 	fi
 
 	printf '%s\n' "$worktree_path"
