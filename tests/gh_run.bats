@@ -1,9 +1,9 @@
 #!/usr/bin/env bats
 
-# Unit tests for gh_worktree_run.sh
+# Unit tests for gh_run.sh
 #
 # Requires bats-core: https://github.com/bats-core/bats-core
-# Run: bats tests/gh_worktree_run.bats
+# Run: bats tests/gh_run.bats
 
 REPO_ROOT="$(cd "$(dirname "$BATS_TEST_DIRNAME")" && pwd)"
 
@@ -23,8 +23,8 @@ setup() {
 	eval "$(
 		# shellcheck source=../scripts/gh_worktree.sh
 		source "$REPO_ROOT/scripts/gh_worktree.sh"
-		# shellcheck source=../scripts/gh_worktree_run.sh
-		source "$REPO_ROOT/scripts/gh_worktree_run.sh"
+		# shellcheck source=../scripts/gh_run.sh
+		source "$REPO_ROOT/scripts/gh_run.sh"
 		declare -f _parse_worktree_run_args _show_run_help _worktree_run \
 			_split_args _git_repo_path _worktree_create _run_in_worktree
 	)"

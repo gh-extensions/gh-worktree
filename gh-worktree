@@ -43,12 +43,12 @@ _check_dependencies
 # Source command modules
 # shellcheck source=scripts/gh_worktree.sh
 source "$_gh_worktree_source_dir/scripts/gh_worktree.sh"
-# shellcheck source=scripts/gh_worktree_pr.sh
-source "$_gh_worktree_source_dir/scripts/gh_worktree_pr.sh"
-# shellcheck source=scripts/gh_worktree_issue.sh
-source "$_gh_worktree_source_dir/scripts/gh_worktree_issue.sh"
-# shellcheck source=scripts/gh_worktree_run.sh
-source "$_gh_worktree_source_dir/scripts/gh_worktree_run.sh"
+# shellcheck source=scripts/gh_pr.sh
+source "$_gh_worktree_source_dir/scripts/gh_pr.sh"
+# shellcheck source=scripts/gh_issue.sh
+source "$_gh_worktree_source_dir/scripts/gh_issue.sh"
+# shellcheck source=scripts/gh_run.sh
+source "$_gh_worktree_source_dir/scripts/gh_run.sh"
 
 _show_help() {
 	cat <<'EOF'
