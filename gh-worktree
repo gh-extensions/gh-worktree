@@ -1,0 +1,215 @@
+#!/usr/bin/env bash
+#
+# gh-worktree — GitHub CLI extension that spins up isolated git worktrees
+# for AI-assisted work on pull requests, issues, and workflow runs.
+#
+# Usage:
+#   gh worktree pr <number>    [-- <command>]
+#   gh worktree issue <number> [-- <command>]
+#   gh worktree run <id>       [-- <command>]
+#
+# When no command is given after --, opens $SHELL in the worktree.
+# The worktree is removed when the command (or shell) exits.
+
+[ -z "${DEBUG:-}" ] || set -x
+
+set -euo pipefail
+
+_source_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+# shellcheck source=scripts/worktree_core.sh
+source "$_source_dir/scripts/worktree_core.sh"
+
+# Resolve the git repository root, or exit with an error.
+_repo_root() {
+	local root
+	root=$(git rev-parse --show-toplevel 2>/dev/null) || {
+		echo "gh-worktree: not inside a git repository" >&2
+		exit 1
+	}
+	printf '%s' "$root"
+}
+
+# Run a command (or $SHELL) inside the worktree, then remove the worktree on exit.
+_run_in_worktree() {
+	local worktree_path="$1"
+	shift
+	local cmd=("$@")
+
+	trap '_worktree_remove "$worktree_path"' EXIT
+
+	cd "$worktree_path"
+
+	if [[ ${#cmd[@]} -gt 0 ]]; then
+		"${cmd[@]}"
+	else
+		"$SHELL"
+	fi
+}
+
+# Split args on the first -- separator.
+# Everything before -- goes into args_ref; everything after into cmd_ref.
+_split_args() {
+	local -n _sa_args="$1"
+	local -n _sa_cmd="$2"
+	shift 2
+
+	_sa_args=()
+	_sa_cmd=()
+
+	while [[ $# -gt 0 ]]; do
+		if [[ "$1" == "--" ]]; then
+			shift
+			_sa_cmd=("$@")
+			return 0
+		fi
+		_sa_args+=("$1")
+		shift
+	done
+}
+
+# gh worktree pr <number> [-- <command>]
+_worktree_pr() {
+	local args=() cmd=()
+	_split_args args cmd "$@"
+
+	local pr_number="${args[0]:-}"
+	pr_number="${pr_number#\#}"
+
+	if [[ -z "$pr_number" || ! "$pr_number" =~ ^[0-9]+$ ]]; then
+		echo "Usage: gh worktree pr <number> [-- <command>]" >&2
+		return 1
+	fi
+
+	local cwd
+	cwd=$(_repo_root)
+
+	local meta
+	meta=$(gh pr view "$pr_number" --json headRefName,headSha 2>/dev/null) || {
+		echo "gh-worktree: failed to fetch pull request #${pr_number}" >&2
+		return 1
+	}
+
+	local head_ref head_sha
+	head_ref=$(printf '%s' "$meta" | jq -r '.headRefName')
+	head_sha=$(printf '%s' "$meta" | jq -r '.headSha')
+
+	local name="pull-${pr_number}"
+	local worktree_path
+	worktree_path=$(_worktree_create "$cwd" "$name" "$head_ref" "" "$head_ref")
+
+	_run_in_worktree "$worktree_path" "${cmd[@]}"
+}
+
+# gh worktree issue <number> [-- <command>]
+_worktree_issue() {
+	local args=() cmd=()
+	_split_args args cmd "$@"
+
+	local issue_number="${args[0]:-}"
+	issue_number="${issue_number#\#}"
+
+	if [[ -z "$issue_number" || ! "$issue_number" =~ ^[0-9]+$ ]]; then
+		echo "Usage: gh worktree issue <number> [-- <command>]" >&2
+		return 1
+	fi
+
+	local cwd
+	cwd=$(_repo_root)
+
+	local default_branch
+	default_branch=$(git -C "$cwd" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|refs/remotes/origin/||' ||
+		gh repo view --json defaultBranchRef -q '.defaultBranchRef.name' 2>/dev/null ||
+		echo "main")
+
+	local name="issue-${issue_number}"
+	local worktree_path
+	worktree_path=$(_worktree_create "$cwd" "$name" "$default_branch" "" "")
+
+	_run_in_worktree "$worktree_path" "${cmd[@]}"
+}
+
+# gh worktree run <id> [-- <command>]
+_worktree_run() {
+	local args=() cmd=()
+	_split_args args cmd "$@"
+
+	local run_id="${args[0]:-}"
+	run_id="${run_id#\#}"
+
+	if [[ -z "$run_id" || ! "$run_id" =~ ^[0-9]+$ ]]; then
+		echo "Usage: gh worktree run <id> [-- <command>]" >&2
+		return 1
+	fi
+
+	local cwd
+	cwd=$(_repo_root)
+
+	local meta
+	meta=$(gh run view "$run_id" --json headBranch,headSha 2>/dev/null) || {
+		echo "gh-worktree: failed to fetch workflow run #${run_id}" >&2
+		return 1
+	}
+
+	local head_branch head_sha
+	head_branch=$(printf '%s' "$meta" | jq -r '.headBranch')
+	head_sha=$(printf '%s' "$meta" | jq -r '.headSha')
+
+	local name="run-${run_id}"
+	local worktree_path
+	worktree_path=$(_worktree_create "$cwd" "$name" "$head_branch" "$head_sha" "")
+
+	_run_in_worktree "$worktree_path" "${cmd[@]}"
+}
+
+_show_help() {
+	cat <<'EOF'
+gh worktree — spin up isolated git worktrees for pull requests, issues, and workflow runs
+
+USAGE:
+    gh worktree pr <number>    [-- <command>]
+    gh worktree issue <number> [-- <command>]
+    gh worktree run <id>       [-- <command>]
+
+DESCRIPTION:
+    Creates a git worktree for the given GitHub resource, runs the command
+    inside it (or opens $SHELL when no command is given), then removes the
+    worktree on exit.
+
+    Dirty changes are auto-stashed before removal. Unpushed commits are
+    warned about but preserved in the branch reflog.
+
+EXAMPLES:
+    gh worktree pr 42
+    gh worktree pr 42 -- gh ai pr chat 42
+    gh worktree issue 55 -- gh ai issue chat 55
+    gh worktree run 123 -- gh ai run chat 123
+EOF
+}
+
+main() {
+	local subcommand="${1:-}"
+	shift || true
+
+	case "$subcommand" in
+	pr)
+		_worktree_pr "$@"
+		;;
+	issue)
+		_worktree_issue "$@"
+		;;
+	run)
+		_worktree_run "$@"
+		;;
+	--help | -h | help | "")
+		_show_help
+		;;
+	*)
+		echo "gh-worktree: unknown subcommand '$subcommand'" >&2
+		echo "Run 'gh worktree --help' for usage." >&2
+		exit 1
+		;;
+	esac
+}
+
+main "$@"
