@@ -1,2 +1,2 @@
-# Default worktree base directory (GH_WORKTREE_DIR / worktree.dir can change this)
 .github/worktrees/
+.github/sessions/
