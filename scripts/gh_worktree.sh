@@ -147,3 +147,60 @@ _worktree_remove() {
 
 	git -C "$worktree_path" worktree remove -f "$worktree_path" 2>/dev/null || true
 }
+
+# Resolve the git repository root directory
+#
+# Writes the result into the nameref; returns 1 and logs an error on failure.
+#
+# Usage: _git_repo_path git_dir_ref
+_git_repo_path() {
+	local -n _git_dir_ref="$1"
+	_git_dir_ref=$(git rev-parse --show-toplevel 2>/dev/null || true)
+	if [[ -z "$_git_dir_ref" ]]; then
+		gum log --level error "Not inside a git repository"
+		return 1
+	fi
+}
+
+# Split arguments on the first -- separator
+#
+# Everything before -- goes into args_ref; everything after into cmd_ref.
+#
+# Usage: _split_args args_ref cmd_ref "$@"
+_split_args() {
+	local -n _sa_args="$1"
+	local -n _sa_cmd="$2"
+	shift 2
+
+	_sa_args=()
+	_sa_cmd=()
+
+	while [[ $# -gt 0 ]]; do
+		if [[ "$1" == "--" ]]; then
+			shift
+			_sa_cmd=("$@")
+			return 0
+		fi
+		_sa_args+=("$1")
+		shift
+	done
+}
+
+# Run a command (or $SHELL) inside the worktree, removing the worktree on exit.
+#
+# Usage: _run_in_worktree <worktree_path> [cmd...]
+_run_in_worktree() {
+	local worktree_path="$1"
+	shift
+	local cmd=("$@")
+
+	trap '_worktree_remove "$worktree_path"' EXIT
+
+	cd "$worktree_path"
+
+	if [[ ${#cmd[@]} -gt 0 ]]; then
+		"${cmd[@]}"
+	else
+		"$SHELL"
+	fi
+}
