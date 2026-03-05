@@ -102,7 +102,8 @@ _gh_worktree_create() {
 		# Fast-forward the local branch to the remote tip before checking out.
 		# If diverged (local commits ahead), the fetch refuses and the worktree
 		# opens at the local state instead.
-		git -C "$cwd" fetch origin "${checkout_branch}:${checkout_branch}" 2>/dev/null || true
+		git -C "$cwd" fetch origin "${checkout_branch}:${checkout_branch}" 2>/dev/null || \
+			gum log --level warn "Could not update '${checkout_branch}' from remote — opening at local state"
 		if ! git_err=$(git -C "$cwd" worktree add "$worktree_path" "${checkout_branch}" 2>&1); then
 			gum log --level error "$git_err"
 			return 1
