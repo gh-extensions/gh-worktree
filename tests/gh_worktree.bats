@@ -470,3 +470,10 @@ teardown() {
 	[[ "$status" -eq 0 ]]
 	[[ ! -d "$WORKTREE_PATH" ]]
 }
+
+@test "_gh_worktree_run: does not remove worktree when --keep is set" {
+	run _gh_worktree_run --keep "$WORKTREE_PATH" true
+
+	[[ "$status" -eq 0 ]]
+	[[ -d "$WORKTREE_PATH" ]]
+}

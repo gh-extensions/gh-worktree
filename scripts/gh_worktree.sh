@@ -239,18 +239,28 @@ _split_on_separator() {
 
 # Run a command (or $SHELL) inside the worktree, removing the worktree on exit.
 #
-# Changes directory into worktree_path (permanent for this process) and sets
-# a trap to remove the worktree when the process exits.
+# Changes directory into worktree_path (permanent for this process). Unless
+# --keep is passed, sets a trap to remove the worktree when the process exits.
+# With --keep the worktree persists; the caller is responsible for cleanup
+# (e.g. git worktree remove <path>).
 #
-# Usage: _gh_worktree_run <worktree_path> [cmd...]
+# Usage: _gh_worktree_run [--keep] <worktree_path> [cmd...]
 _gh_worktree_run() {
+	local keep=0
+	if [[ "${1:-}" == "--keep" ]]; then
+		keep=1
+		shift
+	fi
+
 	local worktree_path="$1"
 	shift
 	local cmd=("$@")
 
-	# trap EXIT is process-global; this function is called once per process lifetime
-	# shellcheck disable=SC2064
-	trap "_gh_worktree_remove $(printf '%q' "$worktree_path")" EXIT
+	if [[ "$keep" -eq 0 ]]; then
+		# trap EXIT is process-global; this function is called once per process lifetime
+		# shellcheck disable=SC2064
+		trap "_gh_worktree_remove $(printf '%q' "$worktree_path")" EXIT
+	fi
 
 	cd "$worktree_path"
 

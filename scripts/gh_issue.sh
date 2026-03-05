@@ -12,17 +12,24 @@ _show_issue_help() {
 gh worktree issue - Open an isolated worktree for an issue
 
 USAGE:
-    gh worktree issue <ISSUE_NUMBER> [-- <command>]
+    gh worktree issue <ISSUE_NUMBER> [--keep] [-- <command>]
 
 DESCRIPTION:
     Creates a new branch from the default branch, sets up a git worktree,
     and runs the given command inside the worktree (or opens $SHELL when
-    no command is given). The worktree is removed when the command exits.
+    no command is given). The worktree is removed when the command exits
+    unless --keep is passed.
+
+FLAGS:
+    --keep   Skip automatic worktree removal on exit. The worktree persists
+             and must be cleaned up manually:
+             git worktree remove .github/worktrees/issue-<ISSUE_NUMBER>
 
 EXAMPLES:
     gh worktree issue 55
     gh worktree issue 55 -- gh ai issue chat 55
     gh worktree issue 55 -- nvim
+    gh worktree issue 55 --keep -- tmux new-session -s issue-55 -c .
 EOF
 }
 
@@ -42,6 +49,15 @@ _gh_issue() {
 
 	local args=() passthrough=()
 	_split_on_separator args passthrough "$@"
+
+	local keep=0 filtered_args=()
+	for _arg in "${args[@]+"${args[@]}"}"; do
+		case "$_arg" in
+		--keep) keep=1 ;;
+		*) filtered_args+=("$_arg") ;;
+		esac
+	done
+	args=("${filtered_args[@]+"${filtered_args[@]}"}")
 
 	local issue_number=""
 	_parse_number_arg issue_number "${args[@]}"
@@ -76,5 +92,9 @@ _gh_issue() {
 		return 1
 	fi
 
-	_gh_worktree_run "$worktree_path" "${passthrough[@]}"
+	if [[ "$keep" -eq 1 ]]; then
+		_gh_worktree_run --keep "$worktree_path" "${passthrough[@]}"
+	else
+		_gh_worktree_run "$worktree_path" "${passthrough[@]}"
+	fi
 }

@@ -12,18 +12,24 @@ _show_run_help() {
 gh worktree run - Open an isolated worktree for a workflow run
 
 USAGE:
-    gh worktree run <RUN_ID> [-- <command>]
+    gh worktree run <RUN_ID> [--keep] [-- <command>]
 
 DESCRIPTION:
     Fetches the workflow run's head branch and SHA, creates a git worktree
     pinned to the exact commit that triggered the run, and runs the given
     command inside the worktree (or opens $SHELL when no command is given).
-    The worktree is removed when the command exits.
+    The worktree is removed when the command exits unless --keep is passed.
+
+FLAGS:
+    --keep   Skip automatic worktree removal on exit. The worktree persists
+             and must be cleaned up manually:
+             git worktree remove .github/worktrees/run-<RUN_ID>
 
 EXAMPLES:
     gh worktree run 123
     gh worktree run 123 -- gh ai run chat 123
     gh worktree run 123 -- nvim
+    gh worktree run 123 --keep -- tmux new-session -s run-123 -c .
 EOF
 }
 
@@ -43,6 +49,15 @@ _gh_run() {
 
 	local args=() passthrough=()
 	_split_on_separator args passthrough "$@"
+
+	local keep=0 filtered_args=()
+	for _arg in "${args[@]+"${args[@]}"}"; do
+		case "$_arg" in
+		--keep) keep=1 ;;
+		*) filtered_args+=("$_arg") ;;
+		esac
+	done
+	args=("${filtered_args[@]+"${filtered_args[@]}"}")
 
 	local run_id=""
 	_parse_number_arg run_id "${args[@]}"
@@ -81,5 +96,9 @@ _gh_run() {
 		return 1
 	fi
 
-	_gh_worktree_run "$worktree_path" "${passthrough[@]}"
+	if [[ "$keep" -eq 1 ]]; then
+		_gh_worktree_run --keep "$worktree_path" "${passthrough[@]}"
+	else
+		_gh_worktree_run "$worktree_path" "${passthrough[@]}"
+	fi
 }

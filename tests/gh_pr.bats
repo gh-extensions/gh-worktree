@@ -186,6 +186,37 @@ setup() {
 	[[ "$output" == *"RUN:path="* ]]
 }
 
+@test "_gh_pr: passes --keep to _gh_worktree_run" {
+	gum() {
+		case "$1" in
+		spin)
+			while [[ $# -gt 0 && "$1" != "--" ]]; do shift; done
+			[[ $# -gt 0 ]] && shift
+			"$@"
+			;;
+		log) ;;
+		esac
+	}
+	export -f gum
+
+	gh() {
+		case "$1 $2" in
+		"pr view") printf '{"headRefName":"feature-branch"}' ;;
+		esac
+	}
+	export -f gh
+
+	_gh_worktree_create() { echo "/tmp/worktree"; }
+	export -f _gh_worktree_create
+
+	_gh_worktree_run() { echo "ARGS:$*"; }
+
+	run _gh_pr 42 --keep
+
+	[[ "$status" -eq 0 ]]
+	[[ "$output" == *"ARGS:--keep"* ]]
+}
+
 @test "_gh_pr: forwards passthrough command to _gh_worktree_run" {
 	gum() {
 		case "$1" in

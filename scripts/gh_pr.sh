@@ -12,17 +12,24 @@ _show_pr_help() {
 gh worktree pr - Open an isolated worktree for a pull request
 
 USAGE:
-    gh worktree pr <PR_NUMBER> [-- <command>]
+    gh worktree pr <PR_NUMBER> [--keep] [-- <command>]
 
 DESCRIPTION:
     Fetches the pull request head branch, creates a git worktree tracking it,
     and runs the given command inside the worktree (or opens $SHELL when
-    no command is given). The worktree is removed when the command exits.
+    no command is given). The worktree is removed when the command exits
+    unless --keep is passed.
+
+FLAGS:
+    --keep   Skip automatic worktree removal on exit. The worktree persists
+             and must be cleaned up manually:
+             git worktree remove .github/worktrees/pull-<PR_NUMBER>
 
 EXAMPLES:
     gh worktree pr 42
     gh worktree pr 42 -- gh ai pr chat 42
     gh worktree pr 42 -- nvim
+    gh worktree pr 42 --keep -- tmux new-session -s pull-42 -c .
 EOF
 }
 
@@ -41,6 +48,15 @@ _gh_pr() {
 
 	local args=() passthrough=()
 	_split_on_separator args passthrough "$@"
+
+	local keep=0 filtered_args=()
+	for _arg in "${args[@]+"${args[@]}"}"; do
+		case "$_arg" in
+		--keep) keep=1 ;;
+		*) filtered_args+=("$_arg") ;;
+		esac
+	done
+	args=("${filtered_args[@]+"${filtered_args[@]}"}")
 
 	local pr_number=""
 	_parse_number_arg pr_number "${args[@]}"
@@ -76,5 +92,9 @@ _gh_pr() {
 		return 1
 	fi
 
-	_gh_worktree_run "$worktree_path" "${passthrough[@]}"
+	if [[ "$keep" -eq 1 ]]; then
+		_gh_worktree_run --keep "$worktree_path" "${passthrough[@]}"
+	else
+		_gh_worktree_run "$worktree_path" "${passthrough[@]}"
+	fi
 }
