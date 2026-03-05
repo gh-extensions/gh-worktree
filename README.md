@@ -23,13 +23,14 @@ gh extension install gh-extensions/gh-worktree                # installs from ma
 ## Usage
 
 ```bash
-gh worktree pr <PR_NUMBER>       [-- <command>]
-gh worktree issue <ISSUE_NUMBER> [-- <command>]
-gh worktree run <RUN_ID>         [-- <command>]
+gh worktree pr <PR_NUMBER>       [--keep] [-- <command>]
+gh worktree issue <ISSUE_NUMBER> [--keep] [-- <command>]
+gh worktree run <RUN_ID>         [--keep] [-- <command>]
 ```
 
 When no command is given after `--`, opens `$SHELL` in the worktree.
-The worktree is removed when the command (or shell) exits.
+The worktree is removed when the command (or shell) exits. Pass `--keep` to
+skip automatic cleanup and leave the worktree in place.
 
 ```bash
 gh worktree --help               # show help
@@ -48,6 +49,7 @@ command inside.
 gh worktree pr 42
 gh worktree pr 42 -- nvim
 gh worktree pr 42 -- gh ai pr chat 42
+gh worktree pr 42 --keep
 ```
 
 ### Issue
@@ -59,6 +61,7 @@ worktree, and runs the command inside.
 gh worktree issue 55
 gh worktree issue 55 -- nvim
 gh worktree issue 55 -- gh ai issue chat 55
+gh worktree issue 55 --keep
 ```
 
 ### Run
@@ -70,6 +73,7 @@ to the exact commit that triggered the run, and runs the command inside.
 gh worktree run 123
 gh worktree run 123 -- nvim
 gh worktree run 123 -- gh ai run chat 123
+gh worktree run 123 --keep
 ```
 
 ## Worktrees & Branches
@@ -113,6 +117,13 @@ When the command exits, the worktree is automatically removed. If the worktree
 has uncommitted changes, they are auto-stashed before removal so nothing is
 lost. Recover them with `git stash list`. Unpushed commits remain in the branch
 reflog.
+
+Pass `--keep` to skip automatic cleanup. The worktree stays in place after the
+process exits and must be removed manually:
+
+```bash
+git worktree remove .github/worktrees/pull-42
+```
 
 ## Configuration
 
