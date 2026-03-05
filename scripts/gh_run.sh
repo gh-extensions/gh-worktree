@@ -65,8 +65,8 @@ EOF
 # Fetches the run's head branch and SHA, creates a worktree pinned to the
 # exact commit, and runs the command inside.
 #
-# Usage: _gh_run_exec [RUN_ID] [-- command]
-_gh_run_exec() {
+# Usage: _gh_run [RUN_ID] [-- command]
+_gh_run() {
 	case "${1:-}" in
 	--help | -h | help)
 		_show_run_help
@@ -75,7 +75,7 @@ _gh_run_exec() {
 	esac
 
 	local args=() passthrough=()
-	_split_args args passthrough "$@"
+	_split_on_separator args passthrough "$@"
 
 	local run_id=""
 	_parse_run_args run_id "${args[@]}"
@@ -98,10 +98,10 @@ _gh_run_exec() {
 		return 1
 	fi
 
-	local head_branch
 	local head_sha
-	head_branch=$(printf '%s' "$meta" | jq -r '.headBranch')
 	head_sha=$(printf '%s' "$meta" | jq -r '.headSha')
+	local head_branch
+	head_branch=$(printf '%s' "$meta" | jq -r '.headBranch')
 
 	local name="run-${run_id}"
 	local worktree_path
@@ -114,5 +114,5 @@ _gh_run_exec() {
 		return 1
 	fi
 
-	_run_in_worktree "$worktree_path" "${passthrough[@]}"
+	_gh_worktree_run "$worktree_path" "${passthrough[@]}"
 }

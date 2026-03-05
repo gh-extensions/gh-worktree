@@ -13,7 +13,7 @@ setup() {
 	# _worktree_* function mocks without running real git commands.
 	export _gh_worktree_source_dir="$BATS_TEST_TMPDIR"
 	mkdir -p "$BATS_TEST_TMPDIR/scripts"
-	printf '#!/usr/bin/env bash\ncmd="${1:-}"; shift\n"_worktree_${cmd}" "$@"\n' \
+	printf '#!/usr/bin/env bash\ncmd="${1:-}"; shift\n"_gh_worktree_${cmd}" "$@"\n' \
 		> "$BATS_TEST_TMPDIR/scripts/gh_worktree.sh"
 	chmod +x "$BATS_TEST_TMPDIR/scripts/gh_worktree.sh"
 
@@ -32,8 +32,8 @@ setup() {
 		source "$REPO_ROOT/scripts/gh_worktree.sh"
 		# shellcheck source=../scripts/gh_pr.sh
 		source "$REPO_ROOT/scripts/gh_pr.sh"
-		declare -f _parse_pr_args _show_pr_help _gh_pr_exec \
-			_split_args _git_repo_path _worktree_create _run_in_worktree
+		declare -f _parse_pr_args _show_pr_help _gh_pr \
+			_split_on_separator _git_repo_path _gh_worktree_create _gh_worktree_run
 	)"
 }
 
@@ -99,23 +99,23 @@ setup() {
 }
 
 # ---------------------------------------------------------------------------
-# _gh_pr_exec
+# _gh_pr
 # ---------------------------------------------------------------------------
 
-@test "_gh_pr_exec: shows help with --help flag" {
-	run _gh_pr_exec --help
+@test "_gh_pr: shows help with --help flag" {
+	run _gh_pr --help
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == *"pr"* ]]
 }
 
-@test "_gh_pr_exec: errors when no PR number provided" {
-	run _gh_pr_exec
+@test "_gh_pr: errors when no PR number provided" {
+	run _gh_pr
 
 	[[ "$status" -eq 1 ]]
 }
 
-@test "_gh_pr_exec: errors when metadata fetch fails" {
+@test "_gh_pr: errors when metadata fetch fails" {
 	gum() {
 		case "$1" in
 		spin)
@@ -131,13 +131,13 @@ setup() {
 	gh() { return 1; }
 	export -f gh
 
-	run _gh_pr_exec 42
+	run _gh_pr 42
 
 	[[ "$status" -eq 1 ]]
 	[[ "$output" == *"Failed to fetch GitHub pull request"* ]]
 }
 
-@test "_gh_pr_exec: errors when worktree creation returns empty path" {
+@test "_gh_pr: errors when worktree creation returns empty path" {
 	gum() {
 		case "$1" in
 		spin)
@@ -157,16 +157,16 @@ setup() {
 	}
 	export -f gh
 
-	_worktree_create() { :; }
-	export -f _worktree_create
+	_gh_worktree_create() { :; }
+	export -f _gh_worktree_create
 
-	run _gh_pr_exec 42
+	run _gh_pr 42
 
 	[[ "$status" -eq 1 ]]
 	[[ "$output" == *"Failed to create worktree"* ]]
 }
 
-@test "_gh_pr_exec: calls _worktree_create and _run_in_worktree with correct args" {
+@test "_gh_pr: calls _gh_worktree_create and _gh_worktree_run with correct args" {
 	gum() {
 		case "$1" in
 		spin)
@@ -186,16 +186,16 @@ setup() {
 	}
 	export -f gh
 
-	_worktree_create() {
+	_gh_worktree_create() {
 		echo "ARGS:cwd=$1 name=$2 remote_ref=$3 sha=$4 branch=$5"
 	}
-	export -f _worktree_create
+	export -f _gh_worktree_create
 
-	_run_in_worktree() {
+	_gh_worktree_run() {
 		echo "RUN:path=$1"
 	}
 
-	run _gh_pr_exec 42
+	run _gh_pr 42
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == *"name=pull-42"* ]]
@@ -204,7 +204,7 @@ setup() {
 	[[ "$output" == *"RUN:path="* ]]
 }
 
-@test "_gh_pr_exec: forwards passthrough command to _run_in_worktree" {
+@test "_gh_pr: forwards passthrough command to _gh_worktree_run" {
 	gum() {
 		case "$1" in
 		spin)
@@ -224,15 +224,15 @@ setup() {
 	}
 	export -f gh
 
-	_worktree_create() { echo "/tmp/worktree"; }
-	export -f _worktree_create
+	_gh_worktree_create() { echo "/tmp/worktree"; }
+	export -f _gh_worktree_create
 
-	_run_in_worktree() {
+	_gh_worktree_run() {
 		shift
 		echo "CMD:$*"
 	}
 
-	run _gh_pr_exec 42 -- gh ai pr chat 42
+	run _gh_pr 42 -- gh ai pr chat 42
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == *"CMD:gh ai pr chat 42"* ]]

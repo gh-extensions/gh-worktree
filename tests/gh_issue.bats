@@ -13,7 +13,7 @@ setup() {
 	# _worktree_* function mocks without running real git commands.
 	export _gh_worktree_source_dir="$BATS_TEST_TMPDIR"
 	mkdir -p "$BATS_TEST_TMPDIR/scripts"
-	printf '#!/usr/bin/env bash\ncmd="${1:-}"; shift\n"_worktree_${cmd}" "$@"\n' \
+	printf '#!/usr/bin/env bash\ncmd="${1:-}"; shift\n"_gh_worktree_${cmd}" "$@"\n' \
 		> "$BATS_TEST_TMPDIR/scripts/gh_worktree.sh"
 	chmod +x "$BATS_TEST_TMPDIR/scripts/gh_worktree.sh"
 
@@ -35,8 +35,8 @@ setup() {
 		source "$REPO_ROOT/scripts/gh_worktree.sh"
 		# shellcheck source=../scripts/gh_issue.sh
 		source "$REPO_ROOT/scripts/gh_issue.sh"
-		declare -f _parse_issue_args _show_issue_help _gh_issue_exec \
-			_split_args _git_repo_path _worktree_create _run_in_worktree
+		declare -f _parse_issue_args _show_issue_help _gh_issue \
+			_split_on_separator _git_repo_path _gh_worktree_create _gh_worktree_run
 	)"
 }
 
@@ -102,23 +102,23 @@ setup() {
 }
 
 # ---------------------------------------------------------------------------
-# _gh_issue_exec
+# _gh_issue
 # ---------------------------------------------------------------------------
 
-@test "_gh_issue_exec: shows help with --help flag" {
-	run _gh_issue_exec --help
+@test "_gh_issue: shows help with --help flag" {
+	run _gh_issue --help
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == *"issue"* ]]
 }
 
-@test "_gh_issue_exec: errors when no issue number provided" {
-	run _gh_issue_exec
+@test "_gh_issue: errors when no issue number provided" {
+	run _gh_issue
 
 	[[ "$status" -eq 1 ]]
 }
 
-@test "_gh_issue_exec: errors when worktree creation returns empty path" {
+@test "_gh_issue: errors when worktree creation returns empty path" {
 	gum() {
 		case "$1" in
 		spin)
@@ -131,16 +131,16 @@ setup() {
 	}
 	export -f gum
 
-	_worktree_create() { :; }
-	export -f _worktree_create
+	_gh_worktree_create() { :; }
+	export -f _gh_worktree_create
 
-	run _gh_issue_exec 55
+	run _gh_issue 55
 
 	[[ "$status" -eq 1 ]]
 	[[ "$output" == *"Failed to create worktree"* ]]
 }
 
-@test "_gh_issue_exec: falls back to gh repo view when origin/HEAD not set" {
+@test "_gh_issue: falls back to gh repo view when origin/HEAD not set" {
 	git() {
 		local _args=("$@")
 		[[ "${_args[0]}" == "-C" ]] && _args=("${_args[@]:2}")
@@ -170,18 +170,18 @@ setup() {
 	}
 	export -f gum
 
-	_worktree_create() { echo "ARGS:remote_ref=$3"; }
-	export -f _worktree_create
+	_gh_worktree_create() { echo "ARGS:remote_ref=$3"; }
+	export -f _gh_worktree_create
 
-	_run_in_worktree() { echo "RUN:path=$1"; }
+	_gh_worktree_run() { echo "RUN:path=$1"; }
 
-	run _gh_issue_exec 55
+	run _gh_issue 55
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == *"remote_ref=develop"* ]]
 }
 
-@test "_gh_issue_exec: falls back to main when all branch detection fails" {
+@test "_gh_issue: falls back to main when all branch detection fails" {
 	git() {
 		local _args=("$@")
 		[[ "${_args[0]}" == "-C" ]] && _args=("${_args[@]:2}")
@@ -207,18 +207,18 @@ setup() {
 	}
 	export -f gum
 
-	_worktree_create() { echo "ARGS:remote_ref=$3"; }
-	export -f _worktree_create
+	_gh_worktree_create() { echo "ARGS:remote_ref=$3"; }
+	export -f _gh_worktree_create
 
-	_run_in_worktree() { echo "RUN:path=$1"; }
+	_gh_worktree_run() { echo "RUN:path=$1"; }
 
-	run _gh_issue_exec 55
+	run _gh_issue 55
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == *"remote_ref=main"* ]]
 }
 
-@test "_gh_issue_exec: calls _worktree_create with correct args" {
+@test "_gh_issue: calls _gh_worktree_create with correct args" {
 	gum() {
 		case "$1" in
 		spin)
@@ -231,14 +231,14 @@ setup() {
 	}
 	export -f gum
 
-	_worktree_create() {
+	_gh_worktree_create() {
 		echo "ARGS:cwd=$1 name=$2 remote_ref=$3 sha=$4 branch=$5"
 	}
-	export -f _worktree_create
+	export -f _gh_worktree_create
 
-	_run_in_worktree() { echo "RUN:path=$1"; }
+	_gh_worktree_run() { echo "RUN:path=$1"; }
 
-	run _gh_issue_exec 55
+	run _gh_issue 55
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == *"name=issue-55"* ]]
@@ -246,7 +246,7 @@ setup() {
 	[[ "$output" == *"branch="* ]]
 }
 
-@test "_gh_issue_exec: forwards passthrough command to _run_in_worktree" {
+@test "_gh_issue: forwards passthrough command to _gh_worktree_run" {
 	gum() {
 		case "$1" in
 		spin)
@@ -259,15 +259,15 @@ setup() {
 	}
 	export -f gum
 
-	_worktree_create() { echo "/tmp/worktree"; }
-	export -f _worktree_create
+	_gh_worktree_create() { echo "/tmp/worktree"; }
+	export -f _gh_worktree_create
 
-	_run_in_worktree() {
+	_gh_worktree_run() {
 		shift
 		echo "CMD:$*"
 	}
 
-	run _gh_issue_exec 55 -- gh ai issue chat 55
+	run _gh_issue 55 -- gh ai issue chat 55
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == *"CMD:gh ai issue chat 55"* ]]

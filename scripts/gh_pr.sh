@@ -63,8 +63,8 @@ EOF
 #
 # Fetches the pull request head branch, creates a worktree, and runs the command inside.
 #
-# Usage: _gh_pr_exec [PR_NUMBER] [-- command]
-_gh_pr_exec() {
+# Usage: _gh_pr [PR_NUMBER] [-- command]
+_gh_pr() {
 	case "${1:-}" in
 	--help | -h | help)
 		_show_pr_help
@@ -73,7 +73,7 @@ _gh_pr_exec() {
 	esac
 
 	local args=() passthrough=()
-	_split_args args passthrough "$@"
+	_split_on_separator args passthrough "$@"
 
 	local pr_number=""
 	_parse_pr_args pr_number "${args[@]}"
@@ -109,5 +109,5 @@ _gh_pr_exec() {
 		return 1
 	fi
 
-	_run_in_worktree "$worktree_path" "${passthrough[@]}"
+	_gh_worktree_run "$worktree_path" "${passthrough[@]}"
 }

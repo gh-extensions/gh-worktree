@@ -33,8 +33,8 @@ setup() {
 	eval "$(
 		# shellcheck source=../scripts/gh_worktree.sh
 		source "$REPO_ROOT/scripts/gh_worktree.sh"
-		declare -f _worktree_base_dir _worktree_is_dirty _worktree_has_unpushed \
-			_worktree_create _worktree_remove _git_repo_path _split_args _run_in_worktree
+		declare -f _gh_worktree_base_dir _gh_worktree_is_dirty _gh_worktree_has_unpushed \
+			_gh_worktree_create _gh_worktree_remove _git_repo_path _split_on_separator _gh_worktree_run
 	)"
 }
 
@@ -43,83 +43,83 @@ teardown() {
 }
 
 # ---------------------------------------------------------------------------
-# _worktree_base_dir
+# _gh_worktree_base_dir
 # ---------------------------------------------------------------------------
 
-@test "_worktree_base_dir: returns default .github/worktrees relative to cwd" {
+@test "_gh_worktree_base_dir: returns default .github/worktrees relative to cwd" {
 	unset GH_WORKTREE_DIR
 	gh() { return 1; }
 	export -f gh
 
-	run _worktree_base_dir "/repo/root"
+	run _gh_worktree_base_dir "/repo/root"
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == "/repo/root/.github/worktrees" ]]
 }
 
-@test "_worktree_base_dir: GH_WORKTREE_DIR overrides default" {
+@test "_gh_worktree_base_dir: GH_WORKTREE_DIR overrides default" {
 	export GH_WORKTREE_DIR="/custom/worktrees"
 
-	run _worktree_base_dir "/repo/root"
+	run _gh_worktree_base_dir "/repo/root"
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == "/custom/worktrees" ]]
 	unset GH_WORKTREE_DIR
 }
 
-@test "_worktree_base_dir: gh config get worktree.dir overrides default" {
+@test "_gh_worktree_base_dir: gh config get worktree.dir overrides default" {
 	unset GH_WORKTREE_DIR
 	gh() { echo ".myworktrees"; }
 	export -f gh
 
-	run _worktree_base_dir "/repo/root"
+	run _gh_worktree_base_dir "/repo/root"
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == "/repo/root/.myworktrees" ]]
 }
 
-@test "_worktree_base_dir: absolute path from gh config is not prefixed with cwd" {
+@test "_gh_worktree_base_dir: absolute path from gh config is not prefixed with cwd" {
 	unset GH_WORKTREE_DIR
 	gh() { echo "/abs/path/worktrees"; }
 	export -f gh
 
-	run _worktree_base_dir "/repo/root"
+	run _gh_worktree_base_dir "/repo/root"
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == "/abs/path/worktrees" ]]
 }
 
 # ---------------------------------------------------------------------------
-# _split_args
+# _split_on_separator
 # ---------------------------------------------------------------------------
 
-@test "_split_args: places all args in before when no -- present" {
+@test "_split_on_separator: places all args in before when no -- present" {
 	local args=() cmd=()
-	_split_args args cmd foo bar baz
+	_split_on_separator args cmd foo bar baz
 
 	[[ "${args[*]}" == "foo bar baz" ]]
 	[[ "${#cmd[@]}" -eq 0 ]]
 }
 
-@test "_split_args: splits on -- separator" {
+@test "_split_on_separator: splits on -- separator" {
 	local args=() cmd=()
-	_split_args args cmd 42 -- gh ai pr chat 42
+	_split_on_separator args cmd 42 -- gh ai pr chat 42
 
 	[[ "${args[*]}" == "42" ]]
 	[[ "${cmd[*]}" == "gh ai pr chat 42" ]]
 }
 
-@test "_split_args: handles empty before when -- is first arg" {
+@test "_split_on_separator: handles empty before when -- is first arg" {
 	local args=() cmd=()
-	_split_args args cmd -- gh ai pr chat 42
+	_split_on_separator args cmd -- gh ai pr chat 42
 
 	[[ "${#args[@]}" -eq 0 ]]
 	[[ "${cmd[*]}" == "gh ai pr chat 42" ]]
 }
 
-@test "_split_args: returns two empty arrays for no arguments" {
+@test "_split_on_separator: returns two empty arrays for no arguments" {
 	local args=() cmd=()
-	_split_args args cmd
+	_split_on_separator args cmd
 
 	[[ "${#args[@]}" -eq 0 ]]
 	[[ "${#cmd[@]}" -eq 0 ]]
@@ -152,104 +152,104 @@ teardown() {
 }
 
 # ---------------------------------------------------------------------------
-# _worktree_is_dirty
+# _gh_worktree_is_dirty
 # ---------------------------------------------------------------------------
 
-@test "_worktree_is_dirty: returns 1 for clean worktree" {
-	run _worktree_is_dirty "$WORKTREE_PATH"
+@test "_gh_worktree_is_dirty: returns 1 for clean worktree" {
+	run _gh_worktree_is_dirty "$WORKTREE_PATH"
 	[[ "$status" -eq 1 ]]
 }
 
-@test "_worktree_is_dirty: returns 0 for untracked file" {
+@test "_gh_worktree_is_dirty: returns 0 for untracked file" {
 	echo "new" >"$WORKTREE_PATH/untracked.txt"
 
-	run _worktree_is_dirty "$WORKTREE_PATH"
+	run _gh_worktree_is_dirty "$WORKTREE_PATH"
 	[[ "$status" -eq 0 ]]
 }
 
-@test "_worktree_is_dirty: returns 0 for staged changes" {
+@test "_gh_worktree_is_dirty: returns 0 for staged changes" {
 	echo "staged" >"$WORKTREE_PATH/staged.txt"
 	git -C "$WORKTREE_PATH" add staged.txt
 
-	run _worktree_is_dirty "$WORKTREE_PATH"
+	run _gh_worktree_is_dirty "$WORKTREE_PATH"
 	[[ "$status" -eq 0 ]]
 }
 
 # ---------------------------------------------------------------------------
-# _worktree_has_unpushed
+# _gh_worktree_has_unpushed
 # ---------------------------------------------------------------------------
 
-@test "_worktree_has_unpushed: returns 1 when up to date" {
-	run _worktree_has_unpushed "$WORKTREE_PATH"
+@test "_gh_worktree_has_unpushed: returns 1 when up to date" {
+	run _gh_worktree_has_unpushed "$WORKTREE_PATH"
 	[[ "$status" -eq 1 ]]
 }
 
-@test "_worktree_has_unpushed: returns 0 when commits ahead" {
+@test "_gh_worktree_has_unpushed: returns 0 when commits ahead" {
 	git -C "$WORKTREE_PATH" commit --allow-empty -m "local only" >/dev/null 2>&1
 
-	run _worktree_has_unpushed "$WORKTREE_PATH"
+	run _gh_worktree_has_unpushed "$WORKTREE_PATH"
 	[[ "$status" -eq 0 ]]
 }
 
 # ---------------------------------------------------------------------------
-# _worktree_remove
+# _gh_worktree_remove
 # ---------------------------------------------------------------------------
 
-@test "_worktree_remove: removes clean worktree silently" {
-	_worktree_remove "$WORKTREE_PATH"
+@test "_gh_worktree_remove: removes clean worktree silently" {
+	_gh_worktree_remove "$WORKTREE_PATH"
 
 	[[ ! -d "$WORKTREE_PATH" ]]
 }
 
-@test "_worktree_remove: succeeds when worktree path does not exist" {
-	_worktree_remove "/nonexistent/path"
+@test "_gh_worktree_remove: succeeds when worktree path does not exist" {
+	_gh_worktree_remove "/nonexistent/path"
 }
 
-@test "_worktree_remove: auto-stashes uncommitted changes before removal" {
+@test "_gh_worktree_remove: auto-stashes uncommitted changes before removal" {
 	echo "save me" >"$WORKTREE_PATH/dirty.txt"
 
-	_worktree_remove "$WORKTREE_PATH"
+	_gh_worktree_remove "$WORKTREE_PATH"
 
 	[[ ! -d "$WORKTREE_PATH" ]]
 
 	local stash_list
 	stash_list=$(git -C "$BATS_TEST_TMPDIR/repo" stash list)
-	[[ "$stash_list" == *"gh-worktree: auto-stash 'issue-1'"* ]]
+	[[ "$stash_list" == *"gh-worktree: auto-stash worktree 'issue-1'"* ]]
 }
 
-@test "_worktree_remove: stash includes untracked files" {
+@test "_gh_worktree_remove: stash includes untracked files" {
 	echo "untracked" >"$WORKTREE_PATH/new_file.txt"
 
-	_worktree_remove "$WORKTREE_PATH"
+	_gh_worktree_remove "$WORKTREE_PATH"
 
 	git -C "$BATS_TEST_TMPDIR/repo" stash pop >/dev/null 2>&1
 	[[ -f "$BATS_TEST_TMPDIR/repo/new_file.txt" ]]
 }
 
-@test "_worktree_remove: warns about unpushed commits" {
+@test "_gh_worktree_remove: warns about unpushed commits" {
 	git -C "$WORKTREE_PATH" commit --allow-empty -m "unpushed work" >/dev/null 2>&1
 
 	local output
-	output=$(_worktree_remove "$WORKTREE_PATH" 2>&1)
+	output=$(_gh_worktree_remove "$WORKTREE_PATH" 2>&1)
 
 	[[ ! -d "$WORKTREE_PATH" ]]
 	[[ "$output" == *"unpushed commits"* ]]
 }
 
-@test "_worktree_remove: stashes and warns when both dirty and unpushed" {
+@test "_gh_worktree_remove: stashes and warns when both dirty and unpushed" {
 	echo "dirty" >"$WORKTREE_PATH/dirty.txt"
 	git -C "$WORKTREE_PATH" commit --allow-empty -m "unpushed" >/dev/null 2>&1
 
 	local output
-	output=$(_worktree_remove "$WORKTREE_PATH" 2>&1)
+	output=$(_gh_worktree_remove "$WORKTREE_PATH" 2>&1)
 
 	[[ ! -d "$WORKTREE_PATH" ]]
 	[[ "$output" == *"auto-stash"*"issue-1"* ]]
 	[[ "$output" == *"unpushed commits"* ]]
 }
 
-@test "_worktree_remove: does not stash when worktree is clean" {
-	_worktree_remove "$WORKTREE_PATH"
+@test "_gh_worktree_remove: does not stash when worktree is clean" {
+	_gh_worktree_remove "$WORKTREE_PATH"
 
 	local stash_list
 	stash_list=$(git -C "$BATS_TEST_TMPDIR/repo" stash list)
@@ -257,10 +257,10 @@ teardown() {
 }
 
 # ---------------------------------------------------------------------------
-# _worktree_create
+# _gh_worktree_create
 # ---------------------------------------------------------------------------
 
-@test "_worktree_create: creates worktree at expected path and prints it" {
+@test "_gh_worktree_create: creates worktree at expected path and prints it" {
 	local repo_real
 	repo_real=$(cd "$BATS_TEST_TMPDIR/repo" && pwd -P)
 	local expected_path="$repo_real/.github/worktrees/pull-99"
@@ -269,28 +269,28 @@ teardown() {
 	export -f gh
 
 	local output
-	output=$(_worktree_create "$repo_real" "pull-99" "$DEFAULT_BRANCH" "" "")
+	output=$(_gh_worktree_create "$repo_real" "pull-99" "$DEFAULT_BRANCH" "" "")
 
 	[[ -d "$expected_path" ]]
 	[[ "$output" == "$expected_path" ]]
 }
 
-@test "_worktree_create: is idempotent when worktree already exists" {
+@test "_gh_worktree_create: is idempotent when worktree already exists" {
 	local repo_real
 	repo_real=$(cd "$BATS_TEST_TMPDIR/repo" && pwd -P)
 
 	gh() { return 1; }
 	export -f gh
 
-	_worktree_create "$repo_real" "pull-100" "$DEFAULT_BRANCH" "" "" >/dev/null
+	_gh_worktree_create "$repo_real" "pull-100" "$DEFAULT_BRANCH" "" "" >/dev/null
 
 	local output
-	output=$(_worktree_create "$repo_real" "pull-100" "$DEFAULT_BRANCH" "" "")
+	output=$(_gh_worktree_create "$repo_real" "pull-100" "$DEFAULT_BRANCH" "" "")
 
 	[[ "$output" == "$repo_real/.github/worktrees/pull-100" ]]
 }
 
-@test "_worktree_create: errors when branch is already checked out in another worktree" {
+@test "_gh_worktree_create: errors when branch is already checked out in another worktree" {
 	local repo_real
 	repo_real=$(cd "$BATS_TEST_TMPDIR/repo" && pwd -P)
 
@@ -298,13 +298,13 @@ teardown() {
 	export -f gh
 
 	# issue-1 is already checked out in WORKTREE_PATH from setup
-	run _worktree_create "$repo_real" "issue-1-alt" "$DEFAULT_BRANCH" "" "issue-1"
+	run _gh_worktree_create "$repo_real" "issue-1-alt" "$DEFAULT_BRANCH" "" "issue-1"
 
 	[[ "$status" -ne 0 ]]
 	[[ "$output" == *"already checked out"* ]]
 }
 
-@test "_worktree_create: uses GH_WORKTREE_DIR when set" {
+@test "_gh_worktree_create: uses GH_WORKTREE_DIR when set" {
 	local repo_real
 	repo_real=$(cd "$BATS_TEST_TMPDIR/repo" && pwd -P)
 	export GH_WORKTREE_DIR="$BATS_TEST_TMPDIR/custom-worktrees"
@@ -313,7 +313,7 @@ teardown() {
 	export -f gh
 
 	local output
-	output=$(_worktree_create "$repo_real" "pull-101" "$DEFAULT_BRANCH" "" "")
+	output=$(_gh_worktree_create "$repo_real" "pull-101" "$DEFAULT_BRANCH" "" "")
 
 	[[ "$output" == "$BATS_TEST_TMPDIR/custom-worktrees/pull-101" ]]
 	[[ -d "$BATS_TEST_TMPDIR/custom-worktrees/pull-101" ]]
@@ -321,31 +321,31 @@ teardown() {
 }
 
 # ---------------------------------------------------------------------------
-# _run_in_worktree
+# _gh_worktree_run
 # ---------------------------------------------------------------------------
 
-@test "_run_in_worktree: changes into the worktree directory and runs command" {
-	run _run_in_worktree "$WORKTREE_PATH" pwd
+@test "_gh_worktree_run: changes into the worktree directory and runs command" {
+	run _gh_worktree_run "$WORKTREE_PATH" pwd
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == *"issue-1"* ]]
 }
 
-@test "_run_in_worktree: passes command arguments correctly" {
-	run _run_in_worktree "$WORKTREE_PATH" echo "hello world"
+@test "_gh_worktree_run: passes command arguments correctly" {
+	run _gh_worktree_run "$WORKTREE_PATH" echo "hello world"
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == *"hello world"* ]]
 }
 
-@test "_run_in_worktree: removes worktree on exit" {
-	run _run_in_worktree "$WORKTREE_PATH" true
+@test "_gh_worktree_run: removes worktree on exit" {
+	run _gh_worktree_run "$WORKTREE_PATH" true
 
 	[[ ! -d "$WORKTREE_PATH" ]]
 }
 
-@test "_run_in_worktree: forwards command exit status" {
-	run _run_in_worktree "$WORKTREE_PATH" false
+@test "_gh_worktree_run: forwards command exit status" {
+	run _gh_worktree_run "$WORKTREE_PATH" false
 
 	[[ "$status" -ne 0 ]]
 }

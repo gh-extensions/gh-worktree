@@ -92,13 +92,13 @@ main() {
 
 	case $command in
 	pr)
-		_gh_pr_exec "$@"
+		_gh_pr "$@"
 		;;
 	issue)
-		_gh_issue_exec "$@"
+		_gh_issue "$@"
 		;;
 	run)
-		_gh_run_exec "$@"
+		_gh_run "$@"
 		;;
 	--version | -V)
 		_show_version

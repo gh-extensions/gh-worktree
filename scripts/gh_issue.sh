@@ -64,8 +64,8 @@ EOF
 # Creates a new branch from the default branch, creates a worktree, and
 # runs the command inside.
 #
-# Usage: _gh_issue_exec [ISSUE_NUMBER] [-- command]
-_gh_issue_exec() {
+# Usage: _gh_issue [ISSUE_NUMBER] [-- command]
+_gh_issue() {
 	case "${1:-}" in
 	--help | -h | help)
 		_show_issue_help
@@ -74,7 +74,7 @@ _gh_issue_exec() {
 	esac
 
 	local args=() passthrough=()
-	_split_args args passthrough "$@"
+	_split_on_separator args passthrough "$@"
 
 	local issue_number=""
 	_parse_issue_args issue_number "${args[@]}"
@@ -109,5 +109,5 @@ _gh_issue_exec() {
 		return 1
 	fi
 
-	_run_in_worktree "$worktree_path" "${passthrough[@]}"
+	_gh_worktree_run "$worktree_path" "${passthrough[@]}"
 }

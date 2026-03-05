@@ -11,8 +11,8 @@ set -euo pipefail
 #   2. gh config get worktree.dir
 #   3. Default: .github/worktrees
 #
-# Usage: base=$(_worktree_base_dir <cwd>)
-_worktree_base_dir() {
+# Usage: base=$(_gh_worktree_base_dir <cwd>)
+_gh_worktree_base_dir() {
 	local cwd="$1"
 	local dir
 
@@ -35,8 +35,8 @@ _worktree_base_dir() {
 #
 # Returns 0 if dirty, 1 if clean.
 #
-# Usage: _worktree_is_dirty "/path/to/worktree"
-_worktree_is_dirty() {
+# Usage: _gh_worktree_is_dirty "/path/to/worktree"
+_gh_worktree_is_dirty() {
 	local wt="$1"
 	[[ -n "$(git -C "$wt" status --porcelain 2>/dev/null)" ]]
 }
@@ -46,8 +46,8 @@ _worktree_is_dirty() {
 # Returns 0 if there are unpushed commits, 1 otherwise.
 # Uses --not --remotes so no upstream tracking branch is required.
 #
-# Usage: _worktree_has_unpushed "/path/to/worktree"
-_worktree_has_unpushed() {
+# Usage: _gh_worktree_has_unpushed "/path/to/worktree"
+_gh_worktree_has_unpushed() {
 	local wt="$1"
 	local ahead
 	ahead=$(git -C "$wt" rev-list --count HEAD --not --remotes 2>/dev/null || echo "0")
@@ -56,7 +56,7 @@ _worktree_has_unpushed() {
 
 # Create a git worktree
 #
-# Usage: _worktree_create <cwd> <name> <remote_ref> [<head_sha>] [<branch>]
+# Usage: _gh_worktree_create <cwd> <name> <remote_ref> [<head_sha>] [<branch>]
 #
 #   cwd         — repo root
 #   name        — worktree name; used as local branch name when branch is empty
@@ -67,7 +67,7 @@ _worktree_has_unpushed() {
 #
 # Stdout: worktree path
 # Stderr: git output
-_worktree_create() {
+_gh_worktree_create() {
 	local cwd="$1"
 	local name="$2"
 	local remote_ref="$3"
@@ -75,7 +75,7 @@ _worktree_create() {
 	local branch="${5:-}"
 
 	local base_dir
-	base_dir=$(_worktree_base_dir "$cwd")
+	base_dir=$(_gh_worktree_base_dir "$cwd")
 	local worktree_path="${base_dir}/${name}"
 	mkdir -p "$base_dir"
 
@@ -124,25 +124,25 @@ _worktree_create() {
 # Silently succeeds if the worktree path does not exist.
 # Warns about unpushed commits (they survive in the branch reflog).
 #
-# Usage: _worktree_remove <worktree_path>
-_worktree_remove() {
+# Usage: _gh_worktree_remove <worktree_path>
+_gh_worktree_remove() {
 	local worktree_path="$1"
 
 	if [[ ! -d "$worktree_path" ]]; then
 		return 0
 	fi
 
-	if _worktree_is_dirty "$worktree_path"; then
+	if _gh_worktree_is_dirty "$worktree_path"; then
 		local worktree_name
 		worktree_name=$(basename "$worktree_path")
 
 		git -C "$worktree_path" add -A 2>/dev/null || true
-		if git -C "$worktree_path" stash push -m "gh-worktree: auto-stash '${worktree_name}'" 2>/dev/null; then
-			gum log --level info "Auto-stashed uncommitted changes from '${worktree_name}' — recover with: git stash list"
+		if git -C "$worktree_path" stash push -m "gh-worktree: auto-stash worktree '${worktree_name}'" 2>/dev/null; then
+			gum log --level info "Auto-stashed uncommitted changes from worktree '${worktree_name}' — recover with: git stash list"
 		fi
 	fi
 
-	if _worktree_has_unpushed "$worktree_path"; then
+	if _gh_worktree_has_unpushed "$worktree_path"; then
 		local branch
 		branch=$(git -C "$worktree_path" rev-parse --abbrev-ref HEAD 2>/dev/null || true)
 		gum log --level warn "branch '${branch}' has unpushed commits — they remain in the reflog"
@@ -167,38 +167,38 @@ _git_repo_path() {
 
 # Split arguments on the first -- separator
 #
-# Everything before -- goes into args_ref; everything after into cmd_ref.
+# Everything before -- goes into before_ref; everything after into after_ref.
 #
-# Usage: _split_args args_ref cmd_ref "$@"
-_split_args() {
-	local -n _sa_args="$1"
-	local -n _sa_cmd="$2"
+# Usage: _split_on_separator before_ref after_ref "$@"
+_split_on_separator() {
+	local -n _before_ref="$1"
+	local -n _after_ref="$2"
 	shift 2
 
-	_sa_args=()
-	_sa_cmd=()
+	_before_ref=()
+	_after_ref=()
 
 	while [[ $# -gt 0 ]]; do
 		if [[ "$1" == "--" ]]; then
 			shift
-			_sa_cmd=("$@")
+			_after_ref=("$@")
 			return 0
 		fi
-		_sa_args+=("$1")
+		_before_ref+=("$1")
 		shift
 	done
 }
 
 # Run a command (or $SHELL) inside the worktree, removing the worktree on exit.
 #
-# Usage: _run_in_worktree <worktree_path> [cmd...]
-_run_in_worktree() {
+# Usage: _gh_worktree_run <worktree_path> [cmd...]
+_gh_worktree_run() {
 	local worktree_path="$1"
 	shift
 	local cmd=("$@")
 
 	# shellcheck disable=SC2064
-	trap "_worktree_remove $(printf '%q' "$worktree_path")" EXIT
+	trap "_gh_worktree_remove $(printf '%q' "$worktree_path")" EXIT
 
 	cd "$worktree_path"
 
@@ -220,10 +220,10 @@ main() {
 
 	case $command in
 	create)
-		_worktree_create "$@"
+		_gh_worktree_create "$@"
 		;;
 	remove)
-		_worktree_remove "$@"
+		_gh_worktree_remove "$@"
 		;;
 	*)
 		gum log --level error "unknown command '${command}'"
