@@ -110,11 +110,10 @@ reflog.
 
 Override the worktree base directory via environment variable or `gh config`.
 
-| Key            | Default             | Description                      |
-| -------------- | ------------------- | -------------------------------- |
-| `worktree.dir` | `.github/worktrees` | Base directory for all worktrees |
-
-The `GH_WORKTREE_DIR` environment variable takes priority over `gh config`.
+| Key                | Default             | Description                                   |
+| ------------------ | ------------------- | --------------------------------------------- |
+| `GH_WORKTREE_DIR`  | —                   | Env var override; highest priority            |
+| `worktree.dir`     | `.github/worktrees` | `gh config` key; used when env var is not set |
 
 ```bash
 # Set a custom worktree directory

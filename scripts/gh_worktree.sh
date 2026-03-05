@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+[ -z "${DEBUG:-}" ] || set -x
+
 set -euo pipefail
 
 # Resolve the base directory for worktrees relative to the repo root.
@@ -216,7 +218,7 @@ main() {
 	command="${1:-}"
 	shift || true
 
-	case "$command" in
+	case $command in
 	create)
 		_worktree_create "$@"
 		;;

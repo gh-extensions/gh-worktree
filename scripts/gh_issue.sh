@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+[ -z "${DEBUG:-}" ] || set -x
+
 set -euo pipefail
 
 # Parse issue worktree arguments

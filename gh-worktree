@@ -90,7 +90,7 @@ main() {
 	local command="${1:-}"
 	shift || true
 
-	case "$command" in
+	case $command in
 	pr)
 		_gh_pr_exec "$@"
 		;;

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+[ -z "${DEBUG:-}" ] || set -x
+
 set -euo pipefail
 
 # Parse run worktree arguments
@@ -88,15 +90,16 @@ _gh_run_exec() {
 	_git_repo_path cwd || return 1
 
 	local meta
-	meta=$(gum spin --title "Fetching GitHub workflow run #${run_id} metadata..." -- \
-		gh run view "$run_id" --json headBranch,headSha 2>/dev/null || true)
+	meta=$(gum spin --show-error --title "Fetching GitHub workflow run #${run_id} metadata..." -- \
+		gh run view "$run_id" --json headBranch,headSha || true)
 
 	if [[ -z "$meta" ]]; then
 		gum log --level error "Failed to fetch GitHub workflow run #${run_id}"
 		return 1
 	fi
 
-	local head_branch head_sha
+	local head_branch
+	local head_sha
 	head_branch=$(printf '%s' "$meta" | jq -r '.headBranch')
 	head_sha=$(printf '%s' "$meta" | jq -r '.headSha')
 

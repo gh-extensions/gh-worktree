@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+[ -z "${DEBUG:-}" ] || set -x
+
 set -euo pipefail
 
 # Parse PR worktree arguments
@@ -86,8 +88,8 @@ _gh_pr_exec() {
 	_git_repo_path cwd || return 1
 
 	local meta
-	meta=$(gum spin --title "Fetching GitHub pull request #${pr_number} metadata..." -- \
-		gh pr view "$pr_number" --json headRefName 2>/dev/null || true)
+	meta=$(gum spin --show-error --title "Fetching GitHub pull request #${pr_number} metadata..." -- \
+		gh pr view "$pr_number" --json headRefName || true)
 
 	if [[ -z "$meta" ]]; then
 		gum log --level error "Failed to fetch GitHub pull request #${pr_number}"
