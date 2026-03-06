@@ -1,11 +1,12 @@
 name: test
-
 on:
   push:
-    branches: ["**"]
+    branches: ["main"]
   pull_request:
     branches: [main]
-
+permissions:
+  contents: read
+  id-token: write
 jobs:
   test:
     runs-on: ubuntu-latest
