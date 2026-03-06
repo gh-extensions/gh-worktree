@@ -129,10 +129,10 @@ git worktree remove .github/worktrees/pull-42
 
 Override the worktree base directory via environment variable or `gh config`.
 
-| Key                | Default             | Description                                   |
-| ------------------ | ------------------- | --------------------------------------------- |
-| `GH_WORKTREE_DIR`  | —                   | Env var override; highest priority            |
-| `worktree.dir`     | `.github/worktrees` | `gh config` key; used when env var is not set |
+| Key               | Default             | Description                                   |
+| ----------------- | ------------------- | --------------------------------------------- |
+| `GH_WORKTREE_DIR` | —                   | Env var override; highest priority            |
+| `worktree.dir`    | `.github/worktrees` | `gh config` key; used when env var is not set |
 
 ```bash
 # Set a custom worktree directory
@@ -182,22 +182,18 @@ that wraps `gh` commands in an interactive fuzzy finder. Source
 source "$HOME/.local/share/gh/extensions/gh-worktree/extras/gh_fzf.sh"
 ```
 
-| Context        | Key     | Action                                                         |
-| -------------- | ------- | -------------------------------------------------------------- |
-| `gh-fzf pr`    | `alt-w` | Open a worktree for the selected PR inline                     |
-| `gh-fzf pr`    | `alt-W` | Open a worktree for the selected PR in a new tmux window       |
-| `gh-fzf pr`    | `alt-S` | Open a worktree for the selected PR in a new tmux session      |
-| `gh-fzf issue` | `alt-w` | Open a worktree for the selected issue inline                  |
-| `gh-fzf issue` | `alt-W` | Open a worktree for the selected issue in a new tmux window    |
-| `gh-fzf issue` | `alt-S` | Open a worktree for the selected issue in a new tmux session   |
-| `gh-fzf run`   | `alt-w` | Open a worktree for the selected run inline                    |
-| `gh-fzf run`   | `alt-W` | Open a worktree for the selected run in a new tmux window      |
-| `gh-fzf run`   | `alt-S` | Open a worktree for the selected run in a new tmux session     |
+| Context        | Key     | Action                                                                                 |
+| -------------- | ------- | -------------------------------------------------------------------------------------- |
+| `gh-fzf pr`    | `alt-W` | Open a worktree for the selected PR (new tmux window inside tmux, inline otherwise)    |
+| `gh-fzf pr`    | `alt-S` | Open a worktree for the selected PR in a new tmux session (tmux only)                  |
+| `gh-fzf issue` | `alt-W` | Open a worktree for the selected issue (new tmux window inside tmux, inline otherwise) |
+| `gh-fzf issue` | `alt-S` | Open a worktree for the selected issue in a new tmux session (tmux only)               |
+| `gh-fzf run`   | `alt-W` | Open a worktree for the selected run (new tmux window inside tmux, inline otherwise)   |
+| `gh-fzf run`   | `alt-S` | Open a worktree for the selected run in a new tmux session (tmux only)                 |
 
-`alt-w` is always available. `alt-W` and `alt-S` are only registered when
-inside tmux. Sessions are named `<current-session>/<type>-<number>` (e.g.
-`main/pull-42`). Re-triggering `alt-S` for an existing session switches to it
-rather than creating a duplicate.
+`alt-S` is only registered when inside tmux. Sessions are named
+`<current-session>/<type>-<number>` (e.g. `main/pull-42`). Re-triggering
+`alt-S` for an existing session switches to it rather than creating a duplicate.
 
 ## See Also
 
