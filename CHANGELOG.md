@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.0](https://github.com/gh-extensions/gh-worktree/compare/v0.2.0...v0.3.0) (2026-03-06)
+
+
+### Features
+
+* add --keep flag to skip automatic worktree cleanup ([f6503a0](https://github.com/gh-extensions/gh-worktree/commit/f6503a0dbbc52e8bb8c995ac00a73eb9de99347e))
+* add gh_tmux.sh helper and expand gh-fzf bindings ([7eb410a](https://github.com/gh-extensions/gh-worktree/commit/7eb410a88d226e06de1dc6c61df8a46a3eb43e3b))
+* add gh-fzf extras binding and document integrations ([3ff440f](https://github.com/gh-extensions/gh-worktree/commit/3ff440fea4720d4cfc9d52f6b1297114fd472355))
+
+
+### Bug Fixes
+
+* use execute-silent + detach + switch-client to avoid TTY error ([77e0047](https://github.com/gh-extensions/gh-worktree/commit/77e0047514152b07b12fcc6888f6aeb387b64afc))
+
 ## [0.2.0](https://github.com/gh-extensions/gh-worktree/compare/v0.1.0...v0.2.0) (2026-03-05)
 
 
