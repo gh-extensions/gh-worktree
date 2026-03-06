@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/gh-extensions/gh-worktree/compare/v0.3.0...v0.3.1) (2026-03-06)
+
+
+### Bug Fixes
+
+* resolve gh_tmux.sh path as absolute in both bash and zsh ([b3cc744](https://github.com/gh-extensions/gh-worktree/commit/b3cc744f04c0330380b6748418740f2aaba892b7))
+
 ## [0.3.0](https://github.com/gh-extensions/gh-worktree/compare/v0.2.0...v0.3.0) (2026-03-06)
 
 
