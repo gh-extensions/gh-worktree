@@ -184,11 +184,20 @@ source "$HOME/.local/share/gh/extensions/gh-worktree/extras/gh_fzf.sh"
 
 | Context        | Key     | Action                                                         |
 | -------------- | ------- | -------------------------------------------------------------- |
-| `gh-fzf pr`    | `alt-S` | Open a new tmux session with a worktree for the selected PR    |
-| `gh-fzf issue` | `alt-S` | Open a new tmux session with a worktree for the selected issue |
-| `gh-fzf run`   | `alt-S` | Open a new tmux session with a worktree for the selected run   |
+| `gh-fzf pr`    | `alt-w` | Open a worktree for the selected PR inline                     |
+| `gh-fzf pr`    | `alt-W` | Open a worktree for the selected PR in a new tmux window       |
+| `gh-fzf pr`    | `alt-S` | Open a worktree for the selected PR in a new tmux session      |
+| `gh-fzf issue` | `alt-w` | Open a worktree for the selected issue inline                  |
+| `gh-fzf issue` | `alt-W` | Open a worktree for the selected issue in a new tmux window    |
+| `gh-fzf issue` | `alt-S` | Open a worktree for the selected issue in a new tmux session   |
+| `gh-fzf run`   | `alt-w` | Open a worktree for the selected run inline                    |
+| `gh-fzf run`   | `alt-W` | Open a worktree for the selected run in a new tmux window      |
+| `gh-fzf run`   | `alt-S` | Open a worktree for the selected run in a new tmux session     |
 
-Bindings are only registered when inside tmux.
+`alt-w` is always available. `alt-W` and `alt-S` are only registered when
+inside tmux. Sessions are named `<current-session>/<type>-<number>` (e.g.
+`main/pull-42`). Re-triggering `alt-S` for an existing session switches to it
+rather than creating a duplicate.
 
 ## See Also
 
