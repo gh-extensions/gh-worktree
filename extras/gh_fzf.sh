@@ -18,7 +18,8 @@
 #     alt-W   Open a worktree for the selected run (new tmux window or inline)
 #     alt-S   Open a worktree for the selected run in a new tmux session (tmux only)
 
-_gh_fzf_dir=$(dirname "${BASH_SOURCE[0]}")
+_gh_fzf_dir=$(dirname "${BASH_SOURCE[0]:-$0}")
+[[ "$_gh_fzf_dir" = /* ]] || _gh_fzf_dir="$(cd "$_gh_fzf_dir" && pwd)"
 _gh_fzf_tmux="$_gh_fzf_dir/gh_tmux.sh"
 
 _gh_fzf_use_tmux=0
