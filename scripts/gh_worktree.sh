@@ -276,11 +276,11 @@ _gh_worktree_run() {
 # Usage: gh_worktree.sh create <args...>
 #        gh_worktree.sh remove <worktree_path>
 main() {
-	local command
-	command="${1:-}"
+	local cmd
+	cmd="${1:-}"
 	shift || true
 
-	case $command in
+	case $cmd in
 	create)
 		_gh_worktree_create "$@"
 		;;
@@ -288,7 +288,7 @@ main() {
 		_gh_worktree_remove "$@"
 		;;
 	*)
-		gum log --level error "unknown command '${command}'"
+		gum log --level error "unknown command '${cmd}'"
 		exit 1
 		;;
 	esac
