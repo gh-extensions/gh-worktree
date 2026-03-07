@@ -8,9 +8,9 @@ command inside a clean worktree, and tears everything down on exit.
 
 ## Prerequisites
 
-- [Gum](https://github.com/charmbracelet/gum) — macOS: `brew install gum`
-- [Bash](https://www.gnu.org/software/bash/) 4.4+ (`bash`) — macOS: `brew install bash`
 - [GitHub CLI](https://cli.github.com/) (`gh`) — macOS: `brew install gh`
+- [Bash](https://www.gnu.org/software/bash/) 4.4+ (`bash`) — macOS: `brew install bash`
+- [Gum](https://github.com/charmbracelet/gum) (`gum`) — macOS: `brew install gum`
 - [jq](https://jqlang.github.io/jq/) (`jq`) — macOS: `brew install jq`
 
 ## Installation
