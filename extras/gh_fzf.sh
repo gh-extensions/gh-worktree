@@ -23,7 +23,10 @@ _gh_fzf_dir=$(dirname "${BASH_SOURCE[0]:-$0}")
 
 _gh_fzf_tmux_use=0
 if [[ -n "${TMUX:-}" ]]; then
-	_gh_fzf_tmux_session=$(tmux display-message -p '#S')
+	_gh_fzf_repo_name=$(
+		git config --get remote.origin.url |
+			sed -E 's#(git@|https?://)([^/:]+)[:/]##; s#\.git$##'
+	)
 	_gh_fzf_tmux_cmd="$_gh_fzf_dir/gh_tmux_cmd.sh"
 	_gh_fzf_tmux_use=1
 fi
@@ -31,7 +34,7 @@ fi
 if [[ "$_gh_fzf_tmux_use" -eq 1 ]]; then
 	_gh_fzf_pr_opts=(
 		"--bind=alt-W:execute-silent(${_gh_fzf_tmux_cmd} new-window worktrees/pull-{1} gh worktree pr {1})+abort"
-		"--bind=alt-S:execute-silent(gh worktree pr {1} --keep -- ${_gh_fzf_tmux_cmd} new-session ${_gh_fzf_tmux_session}/pull-{1})+abort"
+		"--bind=alt-S:execute-silent(gh worktree pr {1} --keep -- ${_gh_fzf_tmux_cmd} new-session ${_gh_fzf_repo_name}/pull-{1})+abort"
 	)
 else
 	_gh_fzf_pr_opts=("--bind=alt-W:execute(gh worktree pr {1})+abort")
@@ -44,7 +47,7 @@ unset _gh_fzf_pr_opts
 if [[ "$_gh_fzf_tmux_use" -eq 1 ]]; then
 	_gh_fzf_issue_opts=(
 		"--bind=alt-W:execute-silent(${_gh_fzf_tmux_cmd} new-window worktrees/issue-{1} gh worktree issue {1})+abort"
-		"--bind=alt-S:execute-silent(gh worktree issue {1} --keep -- ${_gh_fzf_tmux_cmd} new-session ${_gh_fzf_tmux_session}/issue-{1})+abort"
+		"--bind=alt-S:execute-silent(gh worktree issue {1} --keep -- ${_gh_fzf_tmux_cmd} new-session ${_gh_fzf_repo_name}/issue-{1})+abort"
 	)
 else
 	_gh_fzf_issue_opts=("--bind=alt-W:execute(gh worktree issue {1})+abort")
@@ -57,7 +60,7 @@ unset _gh_fzf_issue_opts
 if [[ "$_gh_fzf_tmux_use" -eq 1 ]]; then
 	_gh_fzf_run_opts=(
 		"--bind=alt-W:execute-silent(${_gh_fzf_tmux_cmd} new-window worktrees/run-{-1} gh worktree run {-1})+abort"
-		"--bind=alt-S:execute-silent(gh worktree run {-1} --keep -- ${_gh_fzf_tmux_cmd} new-session ${_gh_fzf_tmux_session}/run-{-1})+abort"
+		"--bind=alt-S:execute-silent(gh worktree run {-1} --keep -- ${_gh_fzf_tmux_cmd} new-session ${_gh_fzf_repo_name}/run-{-1})+abort"
 	)
 else
 	_gh_fzf_run_opts=("--bind=alt-W:execute(gh worktree run {-1})+abort")
@@ -65,4 +68,4 @@ fi
 GH_FZF_RUN_OPTS+="${GH_FZF_RUN_OPTS:+ }$(printf '%q ' "${_gh_fzf_run_opts[@]}")"
 GH_FZF_RUN_OPTS="${GH_FZF_RUN_OPTS% }"
 export GH_FZF_RUN_OPTS
-unset _gh_fzf_run_opts _gh_fzf_tmux_use _gh_fzf_tmux_session _gh_fzf_tmux_cmd _gh_fzf_dir
+unset _gh_fzf_run_opts _gh_fzf_tmux_use _gh_fzf_repo_name _gh_fzf_tmux_cmd _gh_fzf_dir
