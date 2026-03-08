@@ -182,18 +182,18 @@ that wraps `gh` commands in an interactive fuzzy finder. Source
 source "$HOME/.local/share/gh/extensions/gh-worktree/extras/gh_fzf.sh"
 ```
 
-| Context        | Key     | Action                                                                                 |
-| -------------- | ------- | -------------------------------------------------------------------------------------- |
-| `gh-fzf pr`    | `alt-t` | Open a worktree for the selected PR (new tmux window inside tmux, inline otherwise)    |
-| `gh-fzf pr`    | `alt-S` | Open a worktree for the selected PR in a new tmux session (tmux only)                  |
-| `gh-fzf issue` | `alt-t` | Open a worktree for the selected issue (new tmux window inside tmux, inline otherwise) |
-| `gh-fzf issue` | `alt-S` | Open a worktree for the selected issue in a new tmux session (tmux only)               |
-| `gh-fzf run`   | `alt-t` | Open a worktree for the selected run (new tmux window inside tmux, inline otherwise)   |
-| `gh-fzf run`   | `alt-S` | Open a worktree for the selected run in a new tmux session (tmux only)                 |
+| Context        | Key         | Action                                                                                    |
+| -------------- | ----------- | ----------------------------------------------------------------------------------------- |
+| `gh-fzf pr`    | `enter`     | Open a worktree for the selected PR in a new tmux session (tmux) or inline               |
+| `gh-fzf pr`    | `alt-enter` | Open a worktree for the selected PR in a new tmux window (tmux only)                     |
+| `gh-fzf issue` | `enter`     | Open a worktree for the selected issue in a new tmux session (tmux) or inline            |
+| `gh-fzf issue` | `alt-enter` | Open a worktree for the selected issue in a new tmux window (tmux only)                  |
+| `gh-fzf run`   | `enter`     | Open a worktree for the selected run in a new tmux session (tmux) or inline              |
+| `gh-fzf run`   | `alt-enter` | Open a worktree for the selected run in a new tmux window (tmux only)                    |
 
-`alt-S` is only registered when inside tmux. Sessions are named
+`alt-enter` is only registered when inside tmux. Sessions are named
 `<current-session>/<type>-<number>` (e.g. `main/pull-42`). Re-triggering
-`alt-S` for an existing session switches to it rather than creating a duplicate.
+`enter` for an existing session switches to it rather than creating a duplicate.
 
 ## See Also
 
