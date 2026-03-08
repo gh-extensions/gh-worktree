@@ -48,7 +48,7 @@ teardown() {
 # ---------------------------------------------------------------------------
 
 @test "_gh_worktree_base_dir: returns default .github/worktrees relative to cwd" {
-	unset GH_WORKTREE_DIR
+	unset GH_WORKTREE_PATH
 	gh() { return 1; }
 	export -f gh
 
@@ -58,18 +58,18 @@ teardown() {
 	[[ "$output" == "/repo/root/.github/worktrees" ]]
 }
 
-@test "_gh_worktree_base_dir: GH_WORKTREE_DIR overrides default" {
-	export GH_WORKTREE_DIR="/custom/worktrees"
+@test "_gh_worktree_base_dir: GH_WORKTREE_PATH overrides default" {
+	export GH_WORKTREE_PATH="/custom/worktrees"
 
 	run _gh_worktree_base_dir "/repo/root"
 
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == "/custom/worktrees" ]]
-	unset GH_WORKTREE_DIR
+	unset GH_WORKTREE_PATH
 }
 
-@test "_gh_worktree_base_dir: gh config get worktree.dir overrides default" {
-	unset GH_WORKTREE_DIR
+@test "_gh_worktree_base_dir: gh config get worktree.path overrides default" {
+	unset GH_WORKTREE_PATH
 	gh() { echo ".myworktrees"; }
 	export -f gh
 
@@ -80,7 +80,7 @@ teardown() {
 }
 
 @test "_gh_worktree_base_dir: absolute path from gh config is not prefixed with cwd" {
-	unset GH_WORKTREE_DIR
+	unset GH_WORKTREE_PATH
 	gh() { echo "/abs/path/worktrees"; }
 	export -f gh
 
@@ -364,10 +364,10 @@ teardown() {
 	[[ "$output" == *"already checked out"* ]]
 }
 
-@test "_gh_worktree_create: uses GH_WORKTREE_DIR when set" {
+@test "_gh_worktree_create: uses GH_WORKTREE_PATH when set" {
 	local repo_real
 	repo_real=$(cd "$BATS_TEST_TMPDIR/repo" && pwd -P)
-	export GH_WORKTREE_DIR="$BATS_TEST_TMPDIR/custom-worktrees"
+	export GH_WORKTREE_PATH="$BATS_TEST_TMPDIR/custom-worktrees"
 
 	gh() { return 1; }
 	export -f gh
@@ -377,7 +377,7 @@ teardown() {
 
 	[[ "$output" == "$BATS_TEST_TMPDIR/custom-worktrees/pull-101" ]]
 	[[ -d "$BATS_TEST_TMPDIR/custom-worktrees/pull-101" ]]
-	unset GH_WORKTREE_DIR
+	unset GH_WORKTREE_PATH
 }
 
 @test "_gh_worktree_create: pins worktree to head_sha when provided" {

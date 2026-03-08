@@ -129,21 +129,21 @@ git worktree remove .github/worktrees/pull-42
 
 Override the worktree base directory via environment variable or `gh config`.
 
-| Key               | Default             | Description                                   |
-| ----------------- | ------------------- | --------------------------------------------- |
-| `GH_WORKTREE_DIR` | —                   | Env var override; highest priority            |
-| `worktree.dir`    | `.github/worktrees` | `gh config` key; used when env var is not set |
+| Variable / Config Key       | Default             | Description                                   |
+| --------------------------- | ------------------- | --------------------------------------------- |
+| `$GH_WORKTREE_PATH` | —                   | Env var override; highest priority            |
+| `worktree.path`             | `.github/worktrees` | `gh config` key; used when env var is not set |
 
 ```bash
 # Set a custom worktree directory
-gh config set worktree.dir /tmp/worktrees
+gh config set worktree.path /tmp/worktrees
 
 # Or use an environment variable
-GH_WORKTREE_DIR=/tmp/worktrees gh worktree pr 42
+GH_WORKTREE_PATH=/tmp/worktrees gh worktree pr 42
 ```
 
 > **Note:** `gh config set` will print a warning for keys it doesn't
-> recognize (e.g. `'worktree.dir' is not a known configuration key`).
+> recognize (e.g. `'worktree.path' is not a known configuration key`).
 > This is expected — the values are still saved and used by the extension.
 
 Relative paths are resolved against the repository root. Absolute paths are

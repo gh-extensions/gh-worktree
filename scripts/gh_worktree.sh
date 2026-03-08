@@ -7,8 +7,8 @@ set -euo pipefail
 # Resolve the base directory for worktrees relative to the repo root.
 #
 # Resolution order:
-#   1. GH_WORKTREE_DIR env var
-#   2. gh config get worktree.dir
+#   1. GH_WORKTREE_PATH env var
+#   2. gh config get worktree.path
 #   3. Default: .github/worktrees
 #
 # Stdout: base directory path
@@ -17,10 +17,10 @@ _gh_worktree_base_dir() {
 	local cwd="$1"
 	local dir
 
-	if [[ -n "${GH_WORKTREE_DIR:-}" ]]; then
-		dir="$GH_WORKTREE_DIR"
+	if [[ -n "${GH_WORKTREE_PATH:-}" ]]; then
+		dir="$GH_WORKTREE_PATH"
 	else
-		dir=$(gh config get worktree.dir 2>/dev/null || true)
+		dir=$(gh config get worktree.path 2>/dev/null || true)
 		dir="${dir:-.github/worktrees}"
 	fi
 
