@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.2](https://github.com/gh-extensions/gh-worktree/compare/v0.3.1...v0.3.2) (2026-03-08)
+
+
+### Bug Fixes
+
+* add +abort and use execute-silent for alt-S in gh_fzf.sh ([2420c1d](https://github.com/gh-extensions/gh-worktree/commit/2420c1d59df2deae0e50cc232e916ea16a5ab271))
+* serialize GH_FZF_*_OPTS with printf %q for eval-safe format ([a0f0ab1](https://github.com/gh-extensions/gh-worktree/commit/a0f0ab13bc4bd7779d30edf86ac9f98f2d19b848))
+
 ## [0.3.1](https://github.com/gh-extensions/gh-worktree/compare/v0.3.0...v0.3.1) (2026-03-06)
 
 
