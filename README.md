@@ -184,11 +184,11 @@ source "$HOME/.local/share/gh/extensions/gh-worktree/extras/gh_fzf.sh"
 
 | Context        | Key     | Action                                                                                 |
 | -------------- | ------- | -------------------------------------------------------------------------------------- |
-| `gh-fzf pr`    | `alt-W` | Open a worktree for the selected PR (new tmux window inside tmux, inline otherwise)    |
+| `gh-fzf pr`    | `alt-t` | Open a worktree for the selected PR (new tmux window inside tmux, inline otherwise)    |
 | `gh-fzf pr`    | `alt-S` | Open a worktree for the selected PR in a new tmux session (tmux only)                  |
-| `gh-fzf issue` | `alt-W` | Open a worktree for the selected issue (new tmux window inside tmux, inline otherwise) |
+| `gh-fzf issue` | `alt-t` | Open a worktree for the selected issue (new tmux window inside tmux, inline otherwise) |
 | `gh-fzf issue` | `alt-S` | Open a worktree for the selected issue in a new tmux session (tmux only)               |
-| `gh-fzf run`   | `alt-W` | Open a worktree for the selected run (new tmux window inside tmux, inline otherwise)   |
+| `gh-fzf run`   | `alt-t` | Open a worktree for the selected run (new tmux window inside tmux, inline otherwise)   |
 | `gh-fzf run`   | `alt-S` | Open a worktree for the selected run in a new tmux session (tmux only)                 |
 
 `alt-S` is only registered when inside tmux. Sessions are named
