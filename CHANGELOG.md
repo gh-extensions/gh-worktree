@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.0](https://github.com/gh-extensions/gh-worktree/compare/v0.3.2...v0.4.0) (2026-03-08)
+
+
+### Features
+
+* add zsh plugin entry point for plugin manager support ([56c14ac](https://github.com/gh-extensions/gh-worktree/commit/56c14ac1226dbc5e442e69c7b853ff3d4710a175))
+* bind enter/alt-enter to tmux session/window in gh_fzf extras ([57ac0ce](https://github.com/gh-extensions/gh-worktree/commit/57ac0ce49794da5c89837f96e5a6285c47e0ebf5))
+
+
+### Bug Fixes
+
+* replace alt-W with alt-t for tmux window bindings ([e1abd5f](https://github.com/gh-extensions/gh-worktree/commit/e1abd5f0ccb2b9317c6462a1f24a34a5bfb2c5cc))
+* replace alt-W/alt-S with alt-w/alt-enter for tmux bindings ([54ac5ce](https://github.com/gh-extensions/gh-worktree/commit/54ac5cef2e9042b147f62facf74df403a1316335))
+
 ## [0.3.2](https://github.com/gh-extensions/gh-worktree/compare/v0.3.1...v0.3.2) (2026-03-08)
 
 
