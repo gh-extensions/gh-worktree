@@ -7,11 +7,11 @@ set -euo pipefail
 # Print usage to stdout
 _show_help() {
 	cat <<'EOF'
-gh_tmux.sh - tmux helpers for gh-ai
+gh_tmux_cmd.sh - tmux helpers for gh-ai
 
 USAGE:
-    gh_tmux.sh new-session <name> [command...]
-    gh_tmux.sh new-window  <name> [command...]
+    gh_tmux_cmd.sh new-session <name> [command...]
+    gh_tmux_cmd.sh new-window  <name> [command...]
 
 SUBCOMMANDS:
     new-session   Create a tmux session if it does not already exist, then
@@ -99,7 +99,7 @@ new-window)
 	;;
 *)
 	gum log --level error "unknown subcommand: ${1:-(none)}"
-	gum log --level warn 'Run gh_tmux.sh --help for usage.'
+	gum log --level warn 'Run gh_tmux_cmd.sh --help for usage.'
 	exit 1
 	;;
 esac

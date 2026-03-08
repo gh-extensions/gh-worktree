@@ -21,18 +21,17 @@
 _gh_fzf_dir=$(dirname "${BASH_SOURCE[0]:-$0}")
 [[ "$_gh_fzf_dir" = /* ]] || _gh_fzf_dir="$(cd "$_gh_fzf_dir" && pwd)"
 
-_gh_fzf_tmux="$_gh_fzf_dir/gh_tmux.sh"
-
-_gh_fzf_use_tmux=0
+_gh_fzf_tmux_use=0
 if [[ -n "${TMUX:-}" ]]; then
-	_gh_fzf_session=$(tmux display-message -p '#S')
-	_gh_fzf_use_tmux=1
+	_gh_fzf_tmux_session=$(tmux display-message -p '#S')
+	_gh_fzf_tmux_cmd="$_gh_fzf_dir/gh_tmux_cmd.sh"
+	_gh_fzf_tmux_use=1
 fi
 
-if [[ "$_gh_fzf_use_tmux" -eq 1 ]]; then
+if [[ "$_gh_fzf_tmux_use" -eq 1 ]]; then
 	_gh_fzf_pr_opts=(
-		--bind "alt-W:execute-silent(${_gh_fzf_tmux} new-window worktrees/pull-{1} gh worktree pr {1})"
-		--bind "alt-S:execute(gh worktree pr {1} --keep -- ${_gh_fzf_tmux} new-session ${_gh_fzf_session}/pull-{1})"
+		--bind "alt-W:execute-silent(${_gh_fzf_tmux_cmd} new-window worktrees/pull-{1} gh worktree pr {1})"
+		--bind "alt-S:execute(gh worktree pr {1} --keep -- ${_gh_fzf_tmux_cmd} new-session ${_gh_fzf_tmux_session}/pull-{1})"
 	)
 else
 	_gh_fzf_pr_opts=(--bind "alt-W:execute(gh worktree pr {1})")
@@ -40,10 +39,10 @@ fi
 export GH_FZF_PR_OPTS="${GH_FZF_PR_OPTS:+${GH_FZF_PR_OPTS} }${_gh_fzf_pr_opts[*]}"
 unset _gh_fzf_pr_opts
 
-if [[ "$_gh_fzf_use_tmux" -eq 1 ]]; then
+if [[ "$_gh_fzf_tmux_use" -eq 1 ]]; then
 	_gh_fzf_issue_opts=(
-		--bind "alt-W:execute-silent(${_gh_fzf_tmux} new-window worktrees/issue-{1} gh worktree issue {1})"
-		--bind "alt-S:execute(gh worktree issue {1} --keep -- ${_gh_fzf_tmux} new-session ${_gh_fzf_session}/issue-{1})"
+		--bind "alt-W:execute-silent(${_gh_fzf_tmux_cmd} new-window worktrees/issue-{1} gh worktree issue {1})"
+		--bind "alt-S:execute(gh worktree issue {1} --keep -- ${_gh_fzf_tmux_cmd} new-session ${_gh_fzf_tmux_session}/issue-{1})"
 	)
 else
 	_gh_fzf_issue_opts=(--bind "alt-W:execute(gh worktree issue {1})")
@@ -51,13 +50,13 @@ fi
 export GH_FZF_ISSUE_OPTS="${GH_FZF_ISSUE_OPTS:+${GH_FZF_ISSUE_OPTS} }${_gh_fzf_issue_opts[*]}"
 unset _gh_fzf_issue_opts
 
-if [[ "$_gh_fzf_use_tmux" -eq 1 ]]; then
+if [[ "$_gh_fzf_tmux_use" -eq 1 ]]; then
 	_gh_fzf_run_opts=(
-		--bind "alt-W:execute-silent(${_gh_fzf_tmux} new-window worktrees/run-{-1} gh worktree run {-1})"
-		--bind "alt-S:execute(gh worktree run {-1} --keep -- ${_gh_fzf_tmux} new-session ${_gh_fzf_session}/run-{-1})"
+		--bind "alt-W:execute-silent(${_gh_fzf_tmux_cmd} new-window worktrees/run-{-1} gh worktree run {-1})"
+		--bind "alt-S:execute(gh worktree run {-1} --keep -- ${_gh_fzf_tmux_cmd} new-session ${_gh_fzf_tmux_session}/run-{-1})"
 	)
 else
 	_gh_fzf_run_opts=(--bind "alt-W:execute(gh worktree run {-1})")
 fi
 export GH_FZF_RUN_OPTS="${GH_FZF_RUN_OPTS:+${GH_FZF_RUN_OPTS} }${_gh_fzf_run_opts[*]}"
-unset _gh_fzf_run_opts _gh_fzf_use_tmux _gh_fzf_session _gh_fzf_tmux _gh_fzf_dir
+unset _gh_fzf_run_opts _gh_fzf_tmux_use _gh_fzf_tmux_session _gh_fzf_tmux_cmd _gh_fzf_dir
