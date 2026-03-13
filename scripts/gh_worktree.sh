@@ -149,7 +149,7 @@ _gh_worktree_remove() {
 		worktree_name=$(basename "$worktree_path")
 
 		git -C "$worktree_path" add -A 2>/dev/null || true
-		if git -C "$worktree_path" stash push -m "gh-worktree: auto-stash worktree '${worktree_name}'" 2>/dev/null; then
+		if git -C "$worktree_path" stash push -m "gh-worktree: auto-stash worktree '${worktree_name}'" >/dev/null 2>&1; then
 			gum log --level info "Auto-stashed uncommitted changes from worktree '${worktree_name}' — recover with: git stash list"
 		fi
 	fi

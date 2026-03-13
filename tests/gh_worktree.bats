@@ -304,7 +304,7 @@ teardown() {
 	output=$(_gh_worktree_remove "$WORKTREE_PATH" 2>&1)
 
 	[[ ! -d "$WORKTREE_PATH" ]]
-	[[ "$output" == *"auto-stash"*"issue-1"* ]]
+	[[ "$output" == *"Auto-stash"*"issue-1"* ]]
 	[[ "$output" == *"unpushed commits"* ]]
 }
 
