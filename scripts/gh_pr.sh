@@ -62,8 +62,8 @@ _gh_pr() {
 	_parse_number_arg pr_number "${args[@]}"
 
 	if [[ -z "$pr_number" ]]; then
-		gum log --level error "No pull request number provided"
-		gum log --level info "Usage: gh worktree pr <PR_NUMBER> [-- <command>]"
+		_gum log --level error "No pull request number provided"
+		_gum log --level info "Usage: gh worktree pr <PR_NUMBER> [-- <command>]"
 		return 1
 	fi
 
@@ -71,11 +71,11 @@ _gh_pr() {
 	_git_repo_path cwd || return 1
 
 	local meta
-	meta=$(gum spin --title "Fetching GitHub pull request #${pr_number} metadata..." -- \
+	meta=$(_gum spin --title "Fetching GitHub pull request #${pr_number} metadata..." -- \
 		gh pr view "$pr_number" --json headRefName || true)
 
 	if [[ -z "$meta" ]]; then
-		gum log --level error "Failed to fetch GitHub pull request #${pr_number}"
+		_gum log --level error "Failed to fetch GitHub pull request #${pr_number}"
 		return 1
 	fi
 
@@ -84,11 +84,11 @@ _gh_pr() {
 
 	local worktree_path
 	# shellcheck disable=SC2154 # _gh_worktree_source_dir is set by the sourcing script
-	worktree_path=$(gum spin --show-error --title "Creating worktree for GitHub pull request #${pr_number}..." -- \
+	worktree_path=$(_gum spin --show-error --title "Creating worktree for GitHub pull request #${pr_number}..." -- \
 		"$_gh_worktree_source_dir/scripts/gh_worktree.sh" create "$cwd" "pull-$pr_number" "$head_ref" "" "$head_ref")
 
 	if [[ -z "$worktree_path" ]]; then
-		gum log --level error "Failed to create worktree for GitHub pull request #${pr_number}"
+		_gum log --level error "Failed to create worktree for GitHub pull request #${pr_number}"
 		return 1
 	fi
 

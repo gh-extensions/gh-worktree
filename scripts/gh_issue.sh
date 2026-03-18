@@ -63,8 +63,8 @@ _gh_issue() {
 	_parse_number_arg issue_number "${args[@]}"
 
 	if [[ -z "$issue_number" ]]; then
-		gum log --level error "No issue number provided"
-		gum log --level info "Usage: gh worktree issue <ISSUE_NUMBER> [-- <command>]"
+		_gum log --level error "No issue number provided"
+		_gum log --level info "Usage: gh worktree issue <ISSUE_NUMBER> [-- <command>]"
 		return 1
 	fi
 
@@ -75,7 +75,7 @@ _gh_issue() {
 	default_branch=$(git -C "$cwd" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null || true)
 	default_branch="${default_branch#refs/remotes/origin/}"
 	if [[ -z "$default_branch" ]]; then
-		default_branch=$(gum spin --title "Fetching default branch..." -- \
+		default_branch=$(_gum spin --title "Fetching default branch..." -- \
 			gh repo view --json defaultBranchRef -q '.defaultBranchRef.name' || true)
 	fi
 	if [[ -z "$default_branch" ]]; then
@@ -84,11 +84,11 @@ _gh_issue() {
 
 	local worktree_path
 	# shellcheck disable=SC2154 # _gh_worktree_source_dir is set by the sourcing script
-	worktree_path=$(gum spin --show-error --title "Creating worktree for GitHub issue #${issue_number}..." -- \
+	worktree_path=$(_gum spin --show-error --title "Creating worktree for GitHub issue #${issue_number}..." -- \
 		"$_gh_worktree_source_dir/scripts/gh_worktree.sh" create "$cwd" "issue-$issue_number" "$default_branch" "" "")
 
 	if [[ -z "$worktree_path" ]]; then
-		gum log --level error "Failed to create worktree for GitHub issue #${issue_number}"
+		_gum log --level error "Failed to create worktree for GitHub issue #${issue_number}"
 		return 1
 	fi
 
