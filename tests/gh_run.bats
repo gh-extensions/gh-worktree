@@ -33,7 +33,8 @@ setup() {
 		# shellcheck source=../scripts/gh_run.sh
 		source "$REPO_ROOT/scripts/gh_run.sh"
 		declare -f _parse_number_arg _show_run_help _gh_run \
-			_split_on_separator _git_repo_path _gh_worktree_create _gh_worktree_remove _gh_worktree_run
+			_split_on_separator _git_repo_path _gh_worktree_create _gh_worktree_remove _gh_worktree_run \
+			_has_gum _gum
 	)"
 }
 

@@ -35,7 +35,7 @@ setup() {
 		source "$REPO_ROOT/scripts/gh_worktree.sh"
 		declare -f _gh_worktree_base_dir _gh_worktree_is_dirty _gh_worktree_has_unpushed \
 			_gh_worktree_create _gh_worktree_remove _git_repo_path _parse_number_arg \
-			_split_on_separator _gh_worktree_run
+			_split_on_separator _gh_worktree_run _has_gum _gum
 	)"
 }
 
