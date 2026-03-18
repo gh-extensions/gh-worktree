@@ -22,7 +22,7 @@ brew install gh bash gum jq
 **Nix:**
 
 ```bash
-nix-env -iA nixpkgs.gh nixpkgs.bash nixpkgs.gum nixpkgs.jq
+nix profile install nixpkgs#gh nixpkgs#bash nixpkgs#gum nixpkgs#jq
 ```
 
 ## Installation
