@@ -161,24 +161,24 @@ GH_WORKTREE_PATH=/tmp/worktrees gh worktree pr 42
 Relative paths are resolved against the repository root. Absolute paths are
 used as-is.
 
-## Composing with gh-ai
+## Composing with gh-claude
 
-[gh-ai](https://github.com/gh-extensions/gh-ai) is an AI-powered GitHub CLI
-extension. Use `gh-worktree` to set up the environment and `gh-ai` to provide
+[gh-claude](https://github.com/gh-extensions/gh-claude) is an AI-powered GitHub CLI
+extension. Use `gh-worktree` to set up the environment and `gh-claude` to provide
 context:
 
 ```bash
-gh worktree pr 42 -- gh ai pr chat 42
-gh worktree issue 55 -- gh ai issue chat 55
-gh worktree run 123 -- gh ai run chat 123
+gh worktree pr 42 -- gh claude pr chat 42
+gh worktree issue 55 -- gh claude issue chat 55
+gh worktree run 123 -- gh claude run chat 123
 ```
 
-`gh-worktree` owns the environment; `gh-ai` owns the context:
+`gh-worktree` owns the environment; `gh-claude` owns the context:
 
 ```text
-gh worktree pr 42 -- gh ai pr chat 42
+gh worktree pr 42 -- gh claude pr chat 42
   └── gh-worktree creates the worktree and runs the command inside it
-        └── gh-ai receives the PR context and runs inside the worktree
+        └── gh-claude receives the PR context and runs inside the worktree
 ```
 
 ## Integrations
@@ -209,7 +209,7 @@ source "$HOME/.local/share/gh/extensions/gh-worktree/extras/gh_fzf.sh"
 
 ## See Also
 
-- [gh-ai](https://github.com/gh-extensions/gh-ai) — AI-powered copilot for the GitHub CLI
+- [gh-claude](https://github.com/gh-extensions/gh-claude) — AI-powered copilot for the GitHub CLI
 - [gh-fzf](https://github.com/gh-extensions/gh-fzf) — Fuzzy finder for GitHub CLI
 
 ## License
