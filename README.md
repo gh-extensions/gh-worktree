@@ -6,12 +6,24 @@ without leaving the terminal.
 Stop juggling branches. `gh worktree` checks out the right code, runs your
 command inside a clean worktree, and tears everything down on exit.
 
-## Prerequisites
+## Requirements
 
-- [GitHub CLI](https://cli.github.com/) (`gh`) — macOS: `brew install gh`
-- [Bash](https://www.gnu.org/software/bash/) 4.4+ (`bash`) — macOS: `brew install bash`
-- [Gum](https://github.com/charmbracelet/gum) (`gum`) — macOS: `brew install gum`
-- [jq](https://jqlang.github.io/jq/) (`jq`) — macOS: `brew install jq`
+- [GitHub CLI](https://cli.github.com/) (`gh`)
+- [Bash](https://www.gnu.org/software/bash/) 4.4+ (`bash`)
+- [Gum](https://github.com/charmbracelet/gum) (`gum`)
+- [jq](https://jqlang.github.io/jq/) (`jq`)
+
+**macOS (Homebrew):**
+
+```bash
+brew install gh bash gum jq
+```
+
+**Nix:**
+
+```bash
+nix-env -iA nixpkgs.gh nixpkgs.bash nixpkgs.gum nixpkgs.jq
+```
 
 ## Installation
 
