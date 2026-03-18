@@ -10,7 +10,7 @@ command inside a clean worktree, and tears everything down on exit.
 
 - [GitHub CLI](https://cli.github.com/) (`gh`)
 - [Bash](https://www.gnu.org/software/bash/) 4.4+ (`bash`)
-- [Gum](https://github.com/charmbracelet/gum) (`gum`) _(optional)_
+- [Gum](https://github.com/charmbracelet/gum) (`gum`)
 - [jq](https://jqlang.github.io/jq/) (`jq`)
 
 **macOS (Homebrew):**

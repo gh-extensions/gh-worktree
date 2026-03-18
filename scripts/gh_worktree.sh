@@ -93,7 +93,7 @@ _gh_worktree_create() {
 
 	# Refuse if the branch is already checked out elsewhere
 	if grep -qxF "branch refs/heads/${checkout_branch}" <<<"$wt_list"; then
-		_gum log --level error "branch '${checkout_branch}' is already checked out in another worktree"
+		gum log --level error "branch '${checkout_branch}' is already checked out in another worktree"
 		return 1
 	fi
 
@@ -103,9 +103,9 @@ _gh_worktree_create() {
 		# If diverged (local commits ahead), the fetch refuses and the worktree
 		# opens at the local state instead.
 		git -C "$cwd" fetch origin "${checkout_branch}:${checkout_branch}" 2>/dev/null || \
-			_gum log --level warn "Could not update '${checkout_branch}' from remote — opening at local state"
+			gum log --level warn "Could not update '${checkout_branch}' from remote — opening at local state"
 		if ! git_err=$(git -C "$cwd" worktree add "$worktree_path" "${checkout_branch}" 2>&1); then
-			_gum log --level error "$git_err"
+			gum log --level error "$git_err"
 			return 1
 		fi
 	else
@@ -120,7 +120,7 @@ _gh_worktree_create() {
 		local track_flag=""
 		[[ "$checkout_branch" != "$branch" ]] && track_flag="--no-track"
 		if ! git_err=$(git -C "$cwd" worktree add ${track_flag:+"$track_flag"} -b "${checkout_branch}" "$worktree_path" "$git_ref" 2>&1); then
-			_gum log --level error "$git_err"
+			gum log --level error "$git_err"
 			return 1
 		fi
 	fi
@@ -150,14 +150,14 @@ _gh_worktree_remove() {
 
 		git -C "$worktree_path" add -A 2>/dev/null || true
 		if git -C "$worktree_path" stash push -m "gh-worktree: auto-stash worktree '${worktree_name}'" >/dev/null 2>&1; then
-			_gum log --level info "Auto-stashed uncommitted changes from worktree '${worktree_name}' — recover with: git stash list"
+			gum log --level info "Auto-stashed uncommitted changes from worktree '${worktree_name}' — recover with: git stash list"
 		fi
 	fi
 
 	if _gh_worktree_has_unpushed "$worktree_path"; then
 		local branch
 		branch=$(git -C "$worktree_path" rev-parse --abbrev-ref HEAD 2>/dev/null || true)
-		_gum log --level warn "branch '${branch}' has unpushed commits — they remain in the reflog"
+		gum log --level warn "branch '${branch}' has unpushed commits — they remain in the reflog"
 	fi
 
 	git -C "$worktree_path" worktree remove -f "$worktree_path" 2>/dev/null || true
@@ -172,7 +172,7 @@ _git_repo_path() {
 	local -n _git_dir_ref="$1"
 	_git_dir_ref=$(git rev-parse --show-toplevel 2>/dev/null || true)
 	if [[ -z "$_git_dir_ref" ]]; then
-		_gum log --level error "Not inside a git repository"
+		gum log --level error "Not inside a git repository"
 		return 1
 	fi
 }
@@ -195,7 +195,7 @@ _parse_number_arg() {
 		local _pna_arg="${_pna_raw[$_pna_i]}"
 		case "$_pna_arg" in
 		-*)
-			_gum log --level error "unknown flag '$_pna_arg'"
+			gum log --level error "unknown flag '$_pna_arg'"
 			return 1
 			;;
 		*)
@@ -204,7 +204,7 @@ _parse_number_arg() {
 				# shellcheck disable=SC2034 # nameref: set by caller
 				_pna_num="$_pna_stripped"
 			else
-				_gum log --level error "unexpected argument '$_pna_arg'"
+				gum log --level error "unexpected argument '$_pna_arg'"
 				return 1
 			fi
 			;;
@@ -288,7 +288,7 @@ main() {
 		_gh_worktree_remove "$@"
 		;;
 	*)
-		_gum log --level error "unknown command '${cmd}'"
+		gum log --level error "unknown command '${cmd}'"
 		exit 1
 		;;
 	esac

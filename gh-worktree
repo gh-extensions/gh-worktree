@@ -8,9 +8,8 @@ _gh_worktree_source_dir=$(dirname "${BASH_SOURCE[0]}")
 
 # Verify required dependencies are installed
 #
-# Checks that Bash 4.4+, gh, and jq are available.
+# Checks that Bash 4.4+, gh, gum, and jq are available.
 # Prints installation instructions and exits if any are missing.
-# gum is optional: when present it provides styled output; otherwise plain stderr is used.
 _check_dependencies() {
 	if [[ "${BASH_VERSINFO[0]}" -lt 4 || ("${BASH_VERSINFO[0]}" -eq 4 && "${BASH_VERSINFO[1]}" -lt 4) ]]; then
 		echo "gh-worktree: requires Bash 4.4+ (found ${BASH_VERSION})" >&2
@@ -22,6 +21,9 @@ _check_dependencies() {
 
 	if ! command -v gh &>/dev/null; then
 		missing+=("gh   — https://cli.github.com")
+	fi
+	if ! command -v gum &>/dev/null; then
+		missing+=("gum  — https://github.com/charmbracelet/gum")
 	fi
 	if ! command -v jq &>/dev/null; then
 		missing+=("jq   — https://jqlang.github.io/jq")
@@ -40,54 +42,6 @@ _check_dependencies() {
 }
 
 _check_dependencies
-
-# Check if gum is available (memoized).
-_has_gum() {
-	if [[ -z "${_gum_available+x}" ]]; then
-		if command -v gum &>/dev/null; then
-			_gum_available=1
-		else
-			_gum_available=0
-		fi
-	fi
-	[[ "$_gum_available" -eq 1 ]]
-}
-
-# Gum wrapper — dispatches to gum when available, falls back to plain
-# stderr output otherwise.
-# Usage: _gum log --level info "message"
-#        _gum spin --title "title" -- cmd [args...]
-_gum() {
-	local subcmd="$1"
-	shift
-	case "$subcmd" in
-	log)
-		if _has_gum; then
-			gum log "$@"
-		else
-			local msg="${*: -1}"
-			printf '%s\n' "$msg" >&2
-		fi
-		;;
-	spin)
-		if _has_gum; then
-			gum spin "$@"
-		else
-			local title=""
-			while [[ $# -gt 0 && "$1" != "--" ]]; do
-				if [[ "$1" == "--title" ]]; then shift; title="$1"; fi
-				shift
-			done
-			[[ "$1" == "--" ]] && shift
-			[[ -n "$title" ]] && printf '%s\n' "$title" >&2
-			"$@"
-		fi
-		;;
-	*)
-		return 1
-		;;
-	esac
-}
 
 # Source command modules
 # shellcheck source=scripts/gh_worktree.sh
@@ -153,9 +107,9 @@ main() {
 		_show_help
 		;;
 	*)
-		_gum log --level error "unknown command '$cmd'"
-		_gum log --level info "Available commands: pr, issue, run"
-		_gum log --level info "Run 'gh worktree --help' for usage information"
+		gum log --level error "unknown command '$cmd'"
+		gum log --level info "Available commands: pr, issue, run"
+		gum log --level info "Run 'gh worktree --help' for usage information"
 		exit 1
 		;;
 	esac

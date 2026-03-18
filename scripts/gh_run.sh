@@ -63,8 +63,8 @@ _gh_run() {
 	_parse_number_arg run_id "${args[@]}"
 
 	if [[ -z "$run_id" ]]; then
-		_gum log --level error "No run ID provided"
-		_gum log --level info "Usage: gh worktree run <RUN_ID> [-- <command>]"
+		gum log --level error "No run ID provided"
+		gum log --level info "Usage: gh worktree run <RUN_ID> [-- <command>]"
 		return 1
 	fi
 
@@ -72,11 +72,11 @@ _gh_run() {
 	_git_repo_path cwd || return 1
 
 	local meta
-	meta=$(_gum spin --title "Fetching GitHub workflow run #${run_id} metadata..." -- \
+	meta=$(gum spin --title "Fetching GitHub workflow run #${run_id} metadata..." -- \
 		gh run view "$run_id" --json headBranch,headSha || true)
 
 	if [[ -z "$meta" ]]; then
-		_gum log --level error "Failed to fetch GitHub workflow run #${run_id}"
+		gum log --level error "Failed to fetch GitHub workflow run #${run_id}"
 		return 1
 	fi
 
@@ -88,11 +88,11 @@ _gh_run() {
 	local name="run-${run_id}"
 	local worktree_path
 	# shellcheck disable=SC2154 # _gh_worktree_source_dir is set by the sourcing script
-	worktree_path=$(_gum spin --show-error --title "Creating worktree for GitHub workflow run #${run_id}..." -- \
+	worktree_path=$(gum spin --show-error --title "Creating worktree for GitHub workflow run #${run_id}..." -- \
 		"$_gh_worktree_source_dir/scripts/gh_worktree.sh" create "$cwd" "$name" "$head_branch" "$head_sha" "")
 
 	if [[ -z "$worktree_path" ]]; then
-		_gum log --level error "Failed to create worktree for GitHub workflow run #${run_id}"
+		gum log --level error "Failed to create worktree for GitHub workflow run #${run_id}"
 		return 1
 	fi
 
