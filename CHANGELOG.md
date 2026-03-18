@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.0](https://github.com/gh-extensions/gh-worktree/compare/v0.4.1...v0.5.0) (2026-03-18)
+
+
+### Features
+
+* make gum an optional dependency ([1a76bcd](https://github.com/gh-extensions/gh-worktree/commit/1a76bcd2b249e0d187e85fef055241902ecfbd23))
+
+
+### Reverts
+
+* make gum a required dependency again ([ed070fe](https://github.com/gh-extensions/gh-worktree/commit/ed070fe1e75dfdf4e3fecab10f7bc9f14c450805))
+
 ## [0.4.1](https://github.com/gh-extensions/gh-worktree/compare/v0.4.0...v0.4.1) (2026-03-18)
 
 
