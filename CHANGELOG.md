@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/gh-extensions/gh-worktree/compare/v0.4.0...v0.4.1) (2026-03-18)
+
+
+### Bug Fixes
+
+* suppress duplicate auto-stash message when removing dirty worktree ([5498d90](https://github.com/gh-extensions/gh-worktree/commit/5498d90f94234508220f4634315e2070d8475056))
+
 ## [0.4.0](https://github.com/gh-extensions/gh-worktree/compare/v0.3.2...v0.4.0) (2026-03-08)
 
 
