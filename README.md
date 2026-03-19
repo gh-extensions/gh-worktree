@@ -183,6 +183,37 @@ gh worktree pr 42 -- gh claude pr chat 42
         └── gh-claude receives the PR context and runs inside the worktree
 ```
 
+#### Persistent sessions
+
+Pass `--keep` to preserve the worktree after the command exits and to keep
+the Claude session bound to it across re-entries:
+
+```bash
+gh worktree pr 42 --keep -- gh claude pr chat 42
+```
+
+When `--keep` is set and `openssl` is available, `gh-worktree` exports
+`GH_CLAUDE_DEFAULT_SESSION_ID` — a deterministic UUID derived from the
+worktree name. `gh-claude` reads this variable to resume the same
+conversation whenever you re-enter the worktree, giving Claude continuity
+over the lifetime of the PR or issue.
+
+Session ID and worktree are intentionally coupled: without `--keep` the
+worktree is cleaned up on exit, so no session ID is set — a fresh Claude
+context is used on the next run.
+
+To pin a specific session instead of the auto-generated one:
+
+```bash
+GH_CLAUDE_DEFAULT_SESSION_ID=my-session gh worktree pr 42 --keep -- gh claude pr chat 42
+```
+
+> **Note:** session continuity is a `gh-claude` feature. The
+> `GH_CLAUDE_DEFAULT_SESSION_ID` variable has no effect unless `gh-claude`
+> is the command being run. `openssl` is required to generate the session
+> ID; without it the variable is simply not set and `gh-worktree` works
+> normally.
+
 ### gh-fzf
 
 [gh-fzf](https://github.com/gh-extensions/gh-fzf) is a GitHub CLI extension

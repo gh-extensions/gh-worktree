@@ -32,6 +32,29 @@ _gh_worktree_base_dir() {
 	printf '%s' "$dir"
 }
 
+# Generate a deterministic UUIDv5 from a name string.
+#
+# Uses the OID namespace (2.16.840) and openssl for SHA-1 hashing.
+# Stdout: UUID string (e.g. "3d813cbb-47fb-5b9b-9cf2-e60d07e08e7f")
+#
+# Usage: _uuidv5 <name>
+_uuidv5() {
+	local name="$1"
+	# OID namespace: 6ba7b812-9dad-11d1-80b4-00c04fd430c8
+	local hash
+	hash=$(
+		{ printf '\x6b\xa7\xb8\x12\x9d\xad\x11\xd1\x80\xb4\x00\xc0\x4f\xd4\x30\xc8'
+		  printf '%s' "$name"; } | openssl dgst -sha1 | awk '{print $NF}'
+	)
+	local b8
+	b8=$(printf '%02x' $(( (16#${hash:16:2} & 0x3f) | 0x80 )))
+	printf '%s-%s-%s%s-%s%s-%s\n' \
+		"${hash:0:8}" "${hash:8:4}" \
+		"5" "${hash:13:3}" \
+		"$b8" "${hash:18:2}" \
+		"${hash:20:12}"
+}
+
 # Check if a worktree has uncommitted changes (untracked, modified, staged)
 #
 # Returns 0 if dirty, 1 if clean.
@@ -255,6 +278,10 @@ _gh_worktree_run() {
 	local worktree_path="$1"
 	shift
 	local cmd=("$@")
+
+	if [[ "$keep" -eq 1 ]] && [[ -z "${GH_CLAUDE_DEFAULT_SESSION_ID:-}" ]] && command -v openssl &>/dev/null; then
+		export GH_CLAUDE_DEFAULT_SESSION_ID=$(_uuidv5 "$(basename "$worktree_path")")
+	fi
 
 	if [[ "$keep" -eq 0 ]]; then
 		# trap EXIT is process-global; this function is called once per process lifetime
