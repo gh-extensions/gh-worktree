@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/gh-extensions/gh-worktree/compare/v0.5.0...v0.6.0) (2026-03-19)
+
+
+### Features
+
+* export GH_CLAUDE_DEFAULT_SESSION_ID for persistent worktree sessions ([943d288](https://github.com/gh-extensions/gh-worktree/commit/943d288b593bdddca19f36f9d0a1e347b1f10e01))
+
 ## [0.5.0](https://github.com/gh-extensions/gh-worktree/compare/v0.4.1...v0.5.0) (2026-03-18)
 
 
