@@ -238,11 +238,13 @@ source "$HOME/.local/share/gh/extensions/gh-worktree/extras/gh_fzf.sh"
 `<current-session>/<type>-<number>` (e.g. `main/pull-42`). Re-triggering
 `enter` for an existing session switches to it rather than creating a duplicate.
 
-## See Also
+## The gh-extensions Ecosystem
 
-- [gh-claude](https://github.com/gh-extensions/gh-claude) — AI-powered copilot for the GitHub CLI
-- [gh-fzf](https://github.com/gh-extensions/gh-fzf) — Fuzzy finder for GitHub CLI
-- [git-ai](https://github.com/git-extensions/git-ai) — AI-powered commit messages for git (`git ai commit`)
+| Repo | What it provides |
+|------|-----------------|
+| [gh-claude](https://github.com/gh-extensions/gh-claude) | AI-powered copilot for the GitHub CLI |
+| [gh-fzf](https://github.com/gh-extensions/gh-fzf) | Fuzzy finder for GitHub CLI |
+| **gh-worktree** ← you are here | Isolated git worktrees for PRs, issues, and workflow runs |
 
 ## License
 
