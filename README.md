@@ -1,5 +1,7 @@
 # gh-worktree
 
+[![CI Tests](https://github.com/gh-extensions/gh-worktree/actions/workflows/test.yml/badge.svg)](https://github.com/gh-extensions/gh-worktree/actions/workflows/test.yml)
+
 Spin up isolated git worktrees for pull requests, issues, and workflow runs —
 without leaving the terminal.
 
