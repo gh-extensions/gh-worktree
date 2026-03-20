@@ -1,11 +1,10 @@
 # gh-worktree
 
+> Spin up isolated git worktrees for pull requests, issues, and workflow runs — without leaving the terminal.
+
 [![CI Tests](https://github.com/gh-extensions/gh-worktree/actions/workflows/test.yml/badge.svg)](https://github.com/gh-extensions/gh-worktree/actions/workflows/test.yml)
 [![Release](https://img.shields.io/github/v/release/gh-extensions/gh-worktree)](https://github.com/gh-extensions/gh-worktree/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
-Spin up isolated git worktrees for pull requests, issues, and workflow runs —
-without leaving the terminal.
 
 Stop juggling branches. `gh worktree` checks out the right code, runs your
 command inside a clean worktree, and tears everything down on exit.
