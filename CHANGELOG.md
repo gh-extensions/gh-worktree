@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/gh-extensions/gh-worktree/compare/v0.6.0...v0.6.1) (2026-04-16)
+
+
+### Bug Fixes
+
+* add postCreateCommand to restore nix volume permissions ([8408fb2](https://github.com/gh-extensions/gh-worktree/commit/8408fb2609eee2a9775275cf22b61a69d81f17c2))
+
 ## [0.6.0](https://github.com/gh-extensions/gh-worktree/compare/v0.5.0...v0.6.0) (2026-03-19)
 
 
