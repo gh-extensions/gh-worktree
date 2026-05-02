@@ -507,28 +507,28 @@ teardown() {
 }
 
 # ---------------------------------------------------------------------------
-# _gh_worktree_run — GH_CLAUDE_DEFAULT_SESSION_ID
+# _gh_worktree_run — GH_WORKTREE_ID
 # ---------------------------------------------------------------------------
 
-@test "_gh_worktree_run: exports GH_CLAUDE_DEFAULT_SESSION_ID when openssl is available" {
+@test "_gh_worktree_run: exports GH_WORKTREE_ID when openssl is available" {
 	if ! command -v openssl &>/dev/null; then skip "openssl not available"; fi
-	unset GH_CLAUDE_DEFAULT_SESSION_ID
+	unset GH_WORKTREE_ID
 
-	run _gh_worktree_run "$WORKTREE_PATH" bash -c 'echo "$GH_CLAUDE_DEFAULT_SESSION_ID"'
+	run _gh_worktree_run "$WORKTREE_PATH" bash -c 'echo "$GH_WORKTREE_ID"'
 	[[ "$status" -eq 0 ]]
 	[[ "$output" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$ ]]
 }
 
-@test "_gh_worktree_run: does not override pre-set GH_CLAUDE_DEFAULT_SESSION_ID" {
-	export GH_CLAUDE_DEFAULT_SESSION_ID="my-custom-session"
+@test "_gh_worktree_run: does not override pre-set GH_WORKTREE_ID" {
+	export GH_WORKTREE_ID="my-custom-session"
 
-	run _gh_worktree_run "$WORKTREE_PATH" bash -c 'echo "$GH_CLAUDE_DEFAULT_SESSION_ID"'
+	run _gh_worktree_run "$WORKTREE_PATH" bash -c 'echo "$GH_WORKTREE_ID"'
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == "my-custom-session" ]]
 }
 
-@test "_gh_worktree_run: does not set GH_CLAUDE_DEFAULT_SESSION_ID when openssl unavailable" {
-	unset GH_CLAUDE_DEFAULT_SESSION_ID
+@test "_gh_worktree_run: does not set GH_WORKTREE_ID when openssl unavailable" {
+	unset GH_WORKTREE_ID
 
 	# Build a minimal PATH that contains bash but not openssl
 	local nossl="$BATS_TEST_TMPDIR/nossl"
@@ -537,7 +537,7 @@ teardown() {
 
 	local saved_path="$PATH"
 	export PATH="$nossl"
-	run _gh_worktree_run "$WORKTREE_PATH" bash -c 'echo "${GH_CLAUDE_DEFAULT_SESSION_ID:-unset}"'
+	run _gh_worktree_run "$WORKTREE_PATH" bash -c 'echo "${GH_WORKTREE_ID:-unset}"'
 	export PATH="$saved_path"
 
 	[[ "$status" -eq 0 ]]

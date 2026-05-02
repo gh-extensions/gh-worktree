@@ -274,8 +274,8 @@ _gh_worktree_run() {
 	shift
 	local cmd=("$@")
 
-	if [[ -z "${GH_CLAUDE_DEFAULT_SESSION_ID:-}" ]] && command -v openssl &>/dev/null; then
-		export GH_CLAUDE_DEFAULT_SESSION_ID=$(_uuidv5 "$(basename "$worktree_path")")
+	if [[ -z "${GH_WORKTREE_ID:-}" ]] && command -v openssl &>/dev/null; then
+		export GH_WORKTREE_ID=$(_uuidv5 "$(basename "$worktree_path")")
 	fi
 
 	cd "$worktree_path"

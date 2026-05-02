@@ -190,7 +190,7 @@ gh worktree pr 42 -- gh claude pr chat 42
 
 Since worktrees now persist by default, Claude sessions are automatically
 bound to them across re-entries when `openssl` is available. `gh-worktree`
-exports `GH_CLAUDE_DEFAULT_SESSION_ID` — a deterministic UUID derived from
+exports `GH_WORKTREE_ID` — a deterministic UUID derived from
 the worktree name. `gh-claude` reads this variable to resume the same
 conversation whenever you re-enter the worktree, giving Claude continuity
 over the lifetime of the PR or issue.
@@ -198,11 +198,11 @@ over the lifetime of the PR or issue.
 To pin a specific session instead of the auto-generated one:
 
 ```bash
-GH_CLAUDE_DEFAULT_SESSION_ID=my-session gh worktree pr 42 -- gh claude pr chat 42
+GH_WORKTREE_ID=my-session gh worktree pr 42 -- gh claude pr chat 42
 ```
 
 > **Note:** session continuity is a `gh-claude` feature. The
-> `GH_CLAUDE_DEFAULT_SESSION_ID` variable has no effect unless `gh-claude`
+> `GH_WORKTREE_ID` variable has no effect unless `gh-claude`
 > is the command being run. `openssl` is required to generate the session
 > ID; without it the variable is simply not set and `gh-worktree` works
 > normally.
