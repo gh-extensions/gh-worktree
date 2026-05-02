@@ -80,8 +80,8 @@ _gh_pr() {
 		return 1
 	fi
 
-	local cwd=""
-	_git_repo_path cwd || return 1
+	local worktree_path
+	worktree_path=$(_gh_worktree_path "pull" "$pr_number") || return 1
 
 	local meta
 	meta=$(gum spin --title "Fetching GitHub pull request #${pr_number} metadata..." -- \
@@ -95,10 +95,9 @@ _gh_pr() {
 	local head_ref
 	head_ref=$(printf '%s' "$meta" | jq -r '.headRefName')
 
-	local worktree_path
 	# shellcheck disable=SC2154 # _gh_worktree_source_dir is set by the sourcing script
 	worktree_path=$(gum spin --show-error --title "Creating worktree for GitHub pull request #${pr_number}..." -- \
-		"$_gh_worktree_source_dir/scripts/gh_worktree.sh" create "$cwd" "pull-$pr_number" "$head_ref" "" "$head_ref")
+		"$_gh_worktree_source_dir/scripts/gh_worktree.sh" create "$worktree_path" "$head_ref" "" "$head_ref")
 
 	if [[ -z "$worktree_path" ]]; then
 		gum log --level error "Failed to create worktree for GitHub pull request #${pr_number}"

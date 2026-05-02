@@ -35,7 +35,7 @@ setup() {
 		source "$REPO_ROOT/scripts/gh_worktree.sh"
 		declare -f _gh_worktree_base_dir _gh_worktree_is_dirty _gh_worktree_has_unpushed \
 			_gh_worktree_create _gh_worktree_remove _git_repo_path _parse_number_arg \
-			_split_on_separator _gh_worktree_run _uuidv5
+			_split_on_separator _gh_worktree_run _uuidv5 _gh_worktree_path
 	)"
 }
 
@@ -329,7 +329,7 @@ teardown() {
 	export -f gh
 
 	local output
-	output=$(_gh_worktree_create "$repo_real" "pull-99" "$DEFAULT_BRANCH" "" "")
+	output=$(_gh_worktree_create "$expected_path" "$DEFAULT_BRANCH" "" "")
 
 	[[ -d "$expected_path" ]]
 	[[ "$output" == "$expected_path" ]]
@@ -338,51 +338,51 @@ teardown() {
 @test "_gh_worktree_create: is idempotent when worktree already exists" {
 	local repo_real
 	repo_real=$(cd "$BATS_TEST_TMPDIR/repo" && pwd -P)
+	local expected_path="$repo_real/.github/worktrees/pull-100"
 
 	gh() { return 1; }
 	export -f gh
 
-	_gh_worktree_create "$repo_real" "pull-100" "$DEFAULT_BRANCH" "" "" >/dev/null
+	_gh_worktree_create "$expected_path" "$DEFAULT_BRANCH" "" "" >/dev/null
 
 	local output
-	output=$(_gh_worktree_create "$repo_real" "pull-100" "$DEFAULT_BRANCH" "" "")
+	output=$(_gh_worktree_create "$expected_path" "$DEFAULT_BRANCH" "" "")
 
-	[[ "$output" == "$repo_real/.github/worktrees/pull-100" ]]
+	[[ "$output" == "$expected_path" ]]
 }
 
 @test "_gh_worktree_create: errors when branch is already checked out in another worktree" {
 	local repo_real
 	repo_real=$(cd "$BATS_TEST_TMPDIR/repo" && pwd -P)
+	local expected_path="$repo_real/.github/worktrees/issue-1-alt"
 
 	gh() { return 1; }
 	export -f gh
 
 	# issue-1 is already checked out in WORKTREE_PATH from setup
-	run _gh_worktree_create "$repo_real" "issue-1-alt" "$DEFAULT_BRANCH" "" "issue-1"
+	run _gh_worktree_create "$expected_path" "$DEFAULT_BRANCH" "" "issue-1"
 
 	[[ "$status" -ne 0 ]]
 	[[ "$output" == *"already checked out"* ]]
 }
 
-@test "_gh_worktree_create: uses GH_WORKTREE_PATH when set" {
-	local repo_real
-	repo_real=$(cd "$BATS_TEST_TMPDIR/repo" && pwd -P)
-	export GH_WORKTREE_PATH="$BATS_TEST_TMPDIR/custom-worktrees"
+@test "_gh_worktree_create: uses full path provided" {
+	local custom_path="$BATS_TEST_TMPDIR/custom-worktrees/pull-101"
 
 	gh() { return 1; }
 	export -f gh
 
 	local output
-	output=$(_gh_worktree_create "$repo_real" "pull-101" "$DEFAULT_BRANCH" "" "")
+	output=$(_gh_worktree_create "$custom_path" "$DEFAULT_BRANCH" "" "")
 
-	[[ "$output" == "$BATS_TEST_TMPDIR/custom-worktrees/pull-101" ]]
-	[[ -d "$BATS_TEST_TMPDIR/custom-worktrees/pull-101" ]]
-	unset GH_WORKTREE_PATH
+	[[ "$output" == "$custom_path" ]]
+	[[ -d "$custom_path" ]]
 }
 
 @test "_gh_worktree_create: pins worktree to head_sha when provided" {
 	local repo_real
 	repo_real=$(cd "$BATS_TEST_TMPDIR/repo" && pwd -P)
+	local expected_path="$repo_real/.github/worktrees/run-99"
 
 	# Record current HEAD, then add a new commit so HEAD moves forward
 	local old_sha
@@ -394,7 +394,7 @@ teardown() {
 	export -f gh
 
 	local output
-	output=$(_gh_worktree_create "$repo_real" "run-99" "$DEFAULT_BRANCH" "$old_sha" "")
+	output=$(_gh_worktree_create "$expected_path" "$DEFAULT_BRANCH" "$old_sha" "")
 
 	[[ -d "$output" ]]
 	local wt_sha
@@ -405,6 +405,7 @@ teardown() {
 @test "_gh_worktree_create: fast-forwards existing local branch to remote tip" {
 	local repo_real
 	repo_real=$(cd "$BATS_TEST_TMPDIR/repo" && pwd -P)
+	local expected_path="$repo_real/.github/worktrees/pr-77"
 
 	# Push an initial pr-77 branch to the remote
 	git -C "$repo_real" branch pr-77 HEAD >/dev/null 2>&1
@@ -420,7 +421,7 @@ teardown() {
 	export -f gh
 
 	local output
-	output=$(_gh_worktree_create "$repo_real" "pr-77" "pr-77" "" "pr-77")
+	output=$(_gh_worktree_create "$expected_path" "pr-77" "" "pr-77")
 
 	[[ -d "$output" ]]
 	local actual_branch

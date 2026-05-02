@@ -82,7 +82,7 @@ setup() {
 	}
 	export -f gum
 
-	_gh_worktree_create() { echo "ARGS:name=$2"; }
+	_gh_worktree_create() { echo "ARGS:path=$1"; }
 	export -f _gh_worktree_create
 
 	_gh_worktree_run() { echo "RUN:path=$1"; }
@@ -90,7 +90,7 @@ setup() {
 	run _gh_issue "#55"
 
 	[[ "$status" -eq 0 ]]
-	[[ "$output" == *"name=issue-55"* ]]
+	[[ "$output" == *"path="*"/issue-55"* ]]
 }
 
 @test "_gh_issue: errors when worktree creation returns empty path" {
@@ -145,7 +145,7 @@ setup() {
 	}
 	export -f gum
 
-	_gh_worktree_create() { echo "ARGS:remote_ref=$3"; }
+	_gh_worktree_create() { echo "ARGS:remote_ref=$2"; }
 	export -f _gh_worktree_create
 
 	_gh_worktree_run() { echo "RUN:path=$1"; }
@@ -182,7 +182,7 @@ setup() {
 	}
 	export -f gum
 
-	_gh_worktree_create() { echo "ARGS:remote_ref=$3"; }
+	_gh_worktree_create() { echo "ARGS:remote_ref=$2"; }
 	export -f _gh_worktree_create
 
 	_gh_worktree_run() { echo "RUN:path=$1"; }
@@ -207,7 +207,7 @@ setup() {
 	export -f gum
 
 	_gh_worktree_create() {
-		echo "ARGS:cwd=$1 name=$2 remote_ref=$3 sha=$4 branch=$5"
+		echo "ARGS:path=$1 remote_ref=$2 sha=$3 branch=$4"
 	}
 	export -f _gh_worktree_create
 
@@ -216,7 +216,7 @@ setup() {
 	run _gh_issue 55
 
 	[[ "$status" -eq 0 ]]
-	[[ "$output" == *"name=issue-55"* ]]
+	[[ "$output" == *"path="*"/issue-55"* ]]
 	[[ "$output" == *"remote_ref=main"* ]]
 	[[ "$output" == *"branch="* ]]
 }

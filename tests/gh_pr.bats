@@ -86,7 +86,7 @@ setup() {
 	}
 	export -f gh
 
-	_gh_worktree_create() { echo "ARGS:name=$2"; }
+	_gh_worktree_create() { echo "ARGS:path=$1"; }
 	export -f _gh_worktree_create
 
 	_gh_worktree_run() { echo "RUN:path=$1"; }
@@ -94,7 +94,7 @@ setup() {
 	run _gh_pr "#42"
 
 	[[ "$status" -eq 0 ]]
-	[[ "$output" == *"name=pull-42"* ]]
+	[[ "$output" == *"path="*"/pull-42"* ]]
 }
 
 @test "_gh_pr: errors when metadata fetch fails" {
@@ -169,7 +169,7 @@ setup() {
 	export -f gh
 
 	_gh_worktree_create() {
-		echo "ARGS:cwd=$1 name=$2 remote_ref=$3 sha=$4 branch=$5"
+		echo "ARGS:path=$1 remote_ref=$2 sha=$3 branch=$4"
 	}
 	export -f _gh_worktree_create
 
@@ -180,7 +180,7 @@ setup() {
 	run _gh_pr 42
 
 	[[ "$status" -eq 0 ]]
-	[[ "$output" == *"name=pull-42"* ]]
+	[[ "$output" == *"path="*"/pull-42"* ]]
 	[[ "$output" == *"remote_ref=feature-branch"* ]]
 	[[ "$output" == *"branch=feature-branch"* ]]
 	[[ "$output" == *"RUN:path="* ]]

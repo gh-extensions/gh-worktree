@@ -81,8 +81,8 @@ _gh_run() {
 		return 1
 	fi
 
-	local cwd=""
-	_git_repo_path cwd || return 1
+	local worktree_path
+	worktree_path=$(_gh_worktree_path "run" "$run_id") || return 1
 
 	local meta
 	meta=$(gum spin --title "Fetching GitHub workflow run #${run_id} metadata..." -- \
@@ -98,11 +98,9 @@ _gh_run() {
 	local head_branch
 	head_branch=$(printf '%s' "$meta" | jq -r '.headBranch')
 
-	local name="run-${run_id}"
-	local worktree_path
 	# shellcheck disable=SC2154 # _gh_worktree_source_dir is set by the sourcing script
 	worktree_path=$(gum spin --show-error --title "Creating worktree for GitHub workflow run #${run_id}..." -- \
-		"$_gh_worktree_source_dir/scripts/gh_worktree.sh" create "$cwd" "$name" "$head_branch" "$head_sha" "")
+		"$_gh_worktree_source_dir/scripts/gh_worktree.sh" create "$worktree_path" "$head_branch" "$head_sha" "")
 
 	if [[ -z "$worktree_path" ]]; then
 		gum log --level error "Failed to create worktree for GitHub workflow run #${run_id}"
