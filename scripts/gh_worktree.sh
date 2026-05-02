@@ -98,10 +98,13 @@ _gh_worktree_create() {
 	local head_sha="${3:-}"
 	local branch="${4:-}"
 
+	local cwd
+	_git_repo_path cwd || return 1
+
 	mkdir -p "$(dirname "$worktree_path")"
 
 	local wt_list
-	wt_list=$(git worktree list --porcelain)
+	wt_list=$(git -C "$cwd" worktree list --porcelain)
 
 	# Reuse existing worktree instead of failing
 	if grep -qxF "worktree ${worktree_path}" <<<"$wt_list"; then
@@ -118,18 +121,18 @@ _gh_worktree_create() {
 	fi
 
 	local git_err=""
-	if git show-ref --verify --quiet "refs/heads/${checkout_branch}"; then
+	if git -C "$cwd" show-ref --verify --quiet "refs/heads/${checkout_branch}"; then
 		# Fast-forward the local branch to the remote tip before checking out.
 		# If diverged (local commits ahead), the fetch refuses and the worktree
 		# opens at the local state instead.
-		git fetch origin "${checkout_branch}:${checkout_branch}" 2>/dev/null ||
+		git -C "$cwd" fetch origin "${checkout_branch}:${checkout_branch}" 2>/dev/null ||
 			gum log --level warn "Could not update '${checkout_branch}' from remote — opening at local state"
-		if ! git_err=$(git worktree add "$worktree_path" "${checkout_branch}" 2>&1); then
+		if ! git_err=$(git -C "$cwd" worktree add "$worktree_path" "${checkout_branch}" 2>&1); then
 			gum log --level error "$git_err"
 			return 1
 		fi
 	else
-		git fetch origin "$remote_ref" 2>/dev/null || true
+		git -C "$cwd" fetch origin "$remote_ref" 2>/dev/null || true
 
 		# Pin to SHA when provided (run sessions), otherwise use remote branch tip.
 		local git_ref="${head_sha:-origin/${remote_ref}}"
@@ -139,7 +142,7 @@ _gh_worktree_create() {
 		# --no-track to avoid wiring a local branch to the wrong remote ref.
 		local track_flag=""
 		[[ "$checkout_branch" != "$branch" ]] && track_flag="--no-track"
-		if ! git_err=$(git worktree add ${track_flag:+"$track_flag"} -b "${checkout_branch}" "$worktree_path" "$git_ref" 2>&1); then
+		if ! git_err=$(git -C "$cwd" worktree add ${track_flag:+"$track_flag"} -b "${checkout_branch}" "$worktree_path" "$git_ref" 2>&1); then
 			gum log --level error "$git_err"
 			return 1
 		fi
@@ -164,6 +167,9 @@ _gh_worktree_remove() {
 		return 0
 	fi
 
+	local cwd
+	_git_repo_path cwd || return 1
+
 	if _gh_worktree_is_dirty "$worktree_path"; then
 		local worktree_name
 		worktree_name=$(basename "$worktree_path")
@@ -180,7 +186,7 @@ _gh_worktree_remove() {
 		gum log --level warn "branch '${branch}' has unpushed commits — they remain in the reflog"
 	fi
 
-	git -C "$worktree_path" worktree remove -f "$worktree_path" 2>/dev/null || true
+	git -C "$cwd" worktree remove -f "$worktree_path" 2>/dev/null || true
 }
 
 # Resolve the git repository root directory

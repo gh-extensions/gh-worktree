@@ -25,6 +25,9 @@ setup() {
 	DEFAULT_BRANCH=$(git -C "$BATS_TEST_TMPDIR/repo" rev-parse --abbrev-ref HEAD)
 	git -C "$WORKTREE_PATH" branch --set-upstream-to="origin/${DEFAULT_BRANCH}" >/dev/null 2>&1
 
+	# Change directory into the repository so repo-root resolution works
+	cd "$BATS_TEST_TMPDIR/repo"
+
 	gum() { if [[ "$1" == "log" ]]; then shift; shift; shift; echo "$@"; fi; }
 	gh() { :; }
 	export -f gum gh
