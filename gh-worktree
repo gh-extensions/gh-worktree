@@ -59,18 +59,22 @@ gh worktree — spin up isolated git worktrees for pull requests, issues, and wo
 
 USAGE:
     gh worktree pr <PR_NUMBER>       [-- <command>]
+    gh worktree pr rm <PR_NUMBER>
     gh worktree issue <ISSUE_NUMBER> [-- <command>]
+    gh worktree issue rm <ISSUE_NUMBER>
     gh worktree run <RUN_ID>         [-- <command>]
+    gh worktree run rm <RUN_ID>
 
 DESCRIPTION:
-    Creates a git worktree for the given GitHub resource, runs the command
-    inside it (or opens $SHELL when no command is given), then removes the
-    worktree on exit.
+    Creates a git worktree for the given GitHub resource, and runs the command
+    inside it (or opens $SHELL when no command is given).
+
+    All worktrees persist until explicitly removed via the 'rm' subcommand.
 
 COMMANDS:
-    pr      Open an isolated worktree for a pull request
-    issue   Open an isolated worktree for an issue
-    run     Open an isolated worktree for a workflow run
+    pr      Open or remove an isolated worktree for a pull request
+    issue   Open or remove an isolated worktree for an issue
+    run     Open or remove an isolated worktree for a workflow run
 
 FLAGS:
     -V, --version   Print version

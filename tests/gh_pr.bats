@@ -33,7 +33,7 @@ setup() {
 		# shellcheck source=../scripts/gh_pr.sh
 		source "$REPO_ROOT/scripts/gh_pr.sh"
 		declare -f _parse_number_arg _show_pr_help _gh_pr \
-			_split_on_separator _git_repo_path _gh_worktree_create _gh_worktree_remove _gh_worktree_run
+			_split_on_separator _git_repo_path _gh_worktree_create _gh_worktree_remove _gh_worktree_run _gh_worktree_path
 	)"
 }
 
@@ -186,7 +186,7 @@ setup() {
 	[[ "$output" == *"RUN:path="* ]]
 }
 
-@test "_gh_pr: passes --keep to _gh_worktree_run" {
+@test "_gh_pr: rm calls _gh_worktree_remove with correct path" {
 	gum() {
 		case "$1" in
 		spin)
@@ -199,22 +199,19 @@ setup() {
 	}
 	export -f gum
 
-	gh() {
-		case "$1 $2" in
-		"pr view") printf '{"headRefName":"feature-branch"}' ;;
-		esac
-	}
-	export -f gh
+	_gh_worktree_base_dir() { echo "$BATS_TEST_TMPDIR/worktrees"; }
+	export -f _gh_worktree_base_dir
 
-	_gh_worktree_create() { echo "/tmp/worktree"; }
-	export -f _gh_worktree_create
+	_gh_worktree_remove() { echo "REMOVE:path=$1"; }
+	export -f _gh_worktree_remove
 
-	_gh_worktree_run() { echo "ARGS:$*"; }
+	# Create the directory so [[ -d ... ]] succeeds
+	mkdir -p "$BATS_TEST_TMPDIR/worktrees/pull-42"
 
-	run _gh_pr 42 --keep
+	run _gh_pr rm 42
 
 	[[ "$status" -eq 0 ]]
-	[[ "$output" == *"ARGS:--keep"* ]]
+	[[ "$output" == *"REMOVE:path=$BATS_TEST_TMPDIR/worktrees/pull-42"* ]]
 }
 
 @test "_gh_pr: forwards passthrough command to _gh_worktree_run" {

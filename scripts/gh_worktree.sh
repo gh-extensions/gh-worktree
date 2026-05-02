@@ -43,11 +43,13 @@ _uuidv5() {
 	# OID namespace: 6ba7b812-9dad-11d1-80b4-00c04fd430c8
 	local hash
 	hash=$(
-		{ printf '\x6b\xa7\xb8\x12\x9d\xad\x11\xd1\x80\xb4\x00\xc0\x4f\xd4\x30\xc8'
-		  printf '%s' "$name"; } | openssl dgst -sha1 | awk '{print $NF}'
+		{
+			printf '\x6b\xa7\xb8\x12\x9d\xad\x11\xd1\x80\xb4\x00\xc0\x4f\xd4\x30\xc8'
+			printf '%s' "$name"
+		} | openssl dgst -sha1 | awk '{print $NF}'
 	)
 	local b8
-	b8=$(printf '%02x' $(( (16#${hash:16:2} & 0x3f) | 0x80 )))
+	b8=$(printf '%02x' $(((16#${hash:16:2} & 0x3f) | 0x80)))
 	printf '%s-%s-%s%s-%s%s-%s\n' \
 		"${hash:0:8}" "${hash:8:4}" \
 		"5" "${hash:13:3}" \
@@ -125,7 +127,7 @@ _gh_worktree_create() {
 		# Fast-forward the local branch to the remote tip before checking out.
 		# If diverged (local commits ahead), the fetch refuses and the worktree
 		# opens at the local state instead.
-		git -C "$cwd" fetch origin "${checkout_branch}:${checkout_branch}" 2>/dev/null || \
+		git -C "$cwd" fetch origin "${checkout_branch}:${checkout_branch}" 2>/dev/null ||
 			gum log --level warn "Could not update '${checkout_branch}' from remote — opening at local state"
 		if ! git_err=$(git -C "$cwd" worktree add "$worktree_path" "${checkout_branch}" 2>&1); then
 			gum log --level error "$git_err"
@@ -260,33 +262,19 @@ _split_on_separator() {
 	done
 }
 
-# Run a command (or $SHELL) inside the worktree, removing the worktree on exit.
+# Run a command (or $SHELL) inside the worktree.
 #
-# Changes directory into worktree_path (permanent for this process). Unless
-# --keep is passed, sets a trap to remove the worktree when the process exits.
-# With --keep the worktree persists; the caller is responsible for cleanup
-# (e.g. git worktree remove <path>).
+# Changes directory into worktree_path (permanent for this process).
+# All worktrees persist until explicitly removed via the 'rm' subcommand.
 #
-# Usage: _gh_worktree_run [--keep] <worktree_path> [cmd...]
+# Usage: _gh_worktree_run <worktree_path> [cmd...]
 _gh_worktree_run() {
-	local keep=0
-	if [[ "${1:-}" == "--keep" ]]; then
-		keep=1
-		shift
-	fi
-
 	local worktree_path="$1"
 	shift
 	local cmd=("$@")
 
-	if [[ "$keep" -eq 1 ]] && [[ -z "${GH_CLAUDE_DEFAULT_SESSION_ID:-}" ]] && command -v openssl &>/dev/null; then
+	if [[ -z "${GH_CLAUDE_DEFAULT_SESSION_ID:-}" ]] && command -v openssl &>/dev/null; then
 		export GH_CLAUDE_DEFAULT_SESSION_ID=$(_uuidv5 "$(basename "$worktree_path")")
-	fi
-
-	if [[ "$keep" -eq 0 ]]; then
-		# trap EXIT is process-global; this function is called once per process lifetime
-		# shellcheck disable=SC2064
-		trap "_gh_worktree_remove $(printf '%q' "$worktree_path")" EXIT
 	fi
 
 	cd "$worktree_path"
@@ -296,6 +284,21 @@ _gh_worktree_run() {
 	else
 		"$SHELL"
 	fi
+}
+
+# Resolve the absolute path for a worktree
+#
+# Usage: _gh_worktree_path <prefix> <id>
+# Stdout: worktree path
+_gh_worktree_path() {
+	local prefix="$1"
+	local id="$2"
+
+	local cwd=""
+	_git_repo_path cwd || return 1
+	local base_dir
+	base_dir=$(_gh_worktree_base_dir "$cwd")
+	printf '%s/%s-%s' "$base_dir" "$prefix" "$id"
 }
 
 # When executed directly (not sourced), dispatch to the named function.

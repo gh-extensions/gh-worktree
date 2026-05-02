@@ -449,10 +449,11 @@ teardown() {
 	[[ "$output" == *"hello world"* ]]
 }
 
-@test "_gh_worktree_run: removes worktree on exit" {
+@test "_gh_worktree_run: does not remove worktree on exit" {
 	run _gh_worktree_run "$WORKTREE_PATH" true
 
-	[[ ! -d "$WORKTREE_PATH" ]]
+	[[ "$status" -eq 0 ]]
+	[[ -d "$WORKTREE_PATH" ]]
 }
 
 @test "_gh_worktree_run: forwards command exit status" {
@@ -466,13 +467,6 @@ teardown() {
 	export SHELL
 
 	run _gh_worktree_run "$WORKTREE_PATH"
-
-	[[ "$status" -eq 0 ]]
-	[[ ! -d "$WORKTREE_PATH" ]]
-}
-
-@test "_gh_worktree_run: does not remove worktree when --keep is set" {
-	run _gh_worktree_run --keep "$WORKTREE_PATH" true
 
 	[[ "$status" -eq 0 ]]
 	[[ -d "$WORKTREE_PATH" ]]
@@ -512,27 +506,19 @@ teardown() {
 # _gh_worktree_run — GH_CLAUDE_DEFAULT_SESSION_ID
 # ---------------------------------------------------------------------------
 
-@test "_gh_worktree_run: exports GH_CLAUDE_DEFAULT_SESSION_ID with --keep when openssl is available" {
+@test "_gh_worktree_run: exports GH_CLAUDE_DEFAULT_SESSION_ID when openssl is available" {
 	if ! command -v openssl &>/dev/null; then skip "openssl not available"; fi
 	unset GH_CLAUDE_DEFAULT_SESSION_ID
 
-	run _gh_worktree_run --keep "$WORKTREE_PATH" bash -c 'echo "$GH_CLAUDE_DEFAULT_SESSION_ID"'
+	run _gh_worktree_run "$WORKTREE_PATH" bash -c 'echo "$GH_CLAUDE_DEFAULT_SESSION_ID"'
 	[[ "$status" -eq 0 ]]
 	[[ "$output" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$ ]]
 }
 
-@test "_gh_worktree_run: does not set GH_CLAUDE_DEFAULT_SESSION_ID without --keep" {
-	unset GH_CLAUDE_DEFAULT_SESSION_ID
-
-	run _gh_worktree_run "$WORKTREE_PATH" bash -c 'echo "${GH_CLAUDE_DEFAULT_SESSION_ID:-unset}"'
-	[[ "$status" -eq 0 ]]
-	[[ "$output" == "unset" ]]
-}
-
-@test "_gh_worktree_run: does not override pre-set GH_CLAUDE_DEFAULT_SESSION_ID with --keep" {
+@test "_gh_worktree_run: does not override pre-set GH_CLAUDE_DEFAULT_SESSION_ID" {
 	export GH_CLAUDE_DEFAULT_SESSION_ID="my-custom-session"
 
-	run _gh_worktree_run --keep "$WORKTREE_PATH" bash -c 'echo "$GH_CLAUDE_DEFAULT_SESSION_ID"'
+	run _gh_worktree_run "$WORKTREE_PATH" bash -c 'echo "$GH_CLAUDE_DEFAULT_SESSION_ID"'
 	[[ "$status" -eq 0 ]]
 	[[ "$output" == "my-custom-session" ]]
 }
@@ -547,7 +533,7 @@ teardown() {
 
 	local saved_path="$PATH"
 	export PATH="$nossl"
-	run _gh_worktree_run --keep "$WORKTREE_PATH" bash -c 'echo "${GH_CLAUDE_DEFAULT_SESSION_ID:-unset}"'
+	run _gh_worktree_run "$WORKTREE_PATH" bash -c 'echo "${GH_CLAUDE_DEFAULT_SESSION_ID:-unset}"'
 	export PATH="$saved_path"
 
 	[[ "$status" -eq 0 ]]

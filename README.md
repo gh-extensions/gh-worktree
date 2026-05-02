@@ -6,8 +6,8 @@
 [![Release](https://img.shields.io/github/v/release/gh-extensions/gh-worktree)](https://github.com/gh-extensions/gh-worktree/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Stop juggling branches. `gh worktree` checks out the right code, runs your
-command inside a clean worktree, and tears everything down on exit.
+Stop juggling branches. `gh worktree` checks out the right code and runs your
+command inside a clean worktree.
 
 ## Requirements
 
@@ -38,14 +38,17 @@ gh extension install gh-extensions/gh-worktree                # installs from ma
 ## Usage
 
 ```bash
-gh worktree pr <PR_NUMBER>       [--keep] [-- <command>]
-gh worktree issue <ISSUE_NUMBER> [--keep] [-- <command>]
-gh worktree run <RUN_ID>         [--keep] [-- <command>]
+gh worktree pr <PR_NUMBER>           [-- <command>]
+gh worktree pr rm <PR_NUMBER>
+gh worktree issue <ISSUE_NUMBER>     [-- <command>]
+gh worktree issue rm <ISSUE_NUMBER>
+gh worktree run <RUN_ID>             [-- <command>]
+gh worktree run rm <RUN_ID>
 ```
 
 When no command is given after `--`, opens `$SHELL` in the worktree.
-The worktree is removed when the command (or shell) exits. Pass `--keep` to
-skip automatic cleanup and leave the worktree in place.
+All worktrees **persist by default** until explicitly removed via the `rm`
+subcommand.
 
 ```bash
 gh worktree --help               # show help
@@ -64,7 +67,7 @@ command inside.
 gh worktree pr 42
 gh worktree pr 42 -- nvim
 gh worktree pr 42 -- gh claude pr chat 42
-gh worktree pr 42 --keep
+gh worktree pr rm 42             # cleanup when finished
 ```
 
 ### Issue
@@ -76,7 +79,7 @@ worktree, and runs the command inside.
 gh worktree issue 55
 gh worktree issue 55 -- nvim
 gh worktree issue 55 -- gh claude issue chat 55
-gh worktree issue 55 --keep
+gh worktree issue rm 55          # cleanup when finished
 ```
 
 ### Run
@@ -88,7 +91,7 @@ to the exact commit that triggered the run, and runs the command inside.
 gh worktree run 123
 gh worktree run 123 -- nvim
 gh worktree run 123 -- gh claude run chat 123
-gh worktree run 123 --keep
+gh worktree run rm 123           # cleanup when finished
 ```
 
 ## Worktrees & Branches
@@ -128,16 +131,13 @@ git push -u origin run-123
 gh pr create --head run-123
 ```
 
-When the command exits, the worktree is automatically removed. If the worktree
-has uncommitted changes, they are auto-stashed before removal so nothing is
-lost. Recover them with `git stash list`. Unpushed commits remain in the branch
-reflog.
-
-Pass `--keep` to skip automatic cleanup. The worktree stays in place after the
-process exits and must be removed manually:
+Worktrees persist until explicitly removed. Use the `rm` subcommand for the
+corresponding resource to clean up. If the worktree has uncommitted changes,
+they are auto-stashed before removal so nothing is lost. Recover them with
+`git stash list`. Unpushed commits remain in the branch reflog.
 
 ```bash
-git worktree remove .github/worktrees/pull-42
+gh worktree pr rm 42
 ```
 
 ## Configuration
@@ -188,27 +188,17 @@ gh worktree pr 42 -- gh claude pr chat 42
 
 #### Persistent sessions
 
-Pass `--keep` to preserve the worktree after the command exits and to keep
-the Claude session bound to it across re-entries:
-
-```bash
-gh worktree pr 42 --keep -- gh claude pr chat 42
-```
-
-When `--keep` is set and `openssl` is available, `gh-worktree` exports
-`GH_CLAUDE_DEFAULT_SESSION_ID` — a deterministic UUID derived from the
-worktree name. `gh-claude` reads this variable to resume the same
+Since worktrees now persist by default, Claude sessions are automatically
+bound to them across re-entries when `openssl` is available. `gh-worktree`
+exports `GH_CLAUDE_DEFAULT_SESSION_ID` — a deterministic UUID derived from
+the worktree name. `gh-claude` reads this variable to resume the same
 conversation whenever you re-enter the worktree, giving Claude continuity
 over the lifetime of the PR or issue.
-
-Session ID and worktree are intentionally coupled: without `--keep` the
-worktree is cleaned up on exit, so no session ID is set — a fresh Claude
-context is used on the next run.
 
 To pin a specific session instead of the auto-generated one:
 
 ```bash
-GH_CLAUDE_DEFAULT_SESSION_ID=my-session gh worktree pr 42 --keep -- gh claude pr chat 42
+GH_CLAUDE_DEFAULT_SESSION_ID=my-session gh worktree pr 42 -- gh claude pr chat 42
 ```
 
 > **Note:** session continuity is a `gh-claude` feature. The

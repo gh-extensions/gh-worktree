@@ -12,24 +12,24 @@ _show_run_help() {
 gh worktree run - Open an isolated worktree for a workflow run
 
 USAGE:
-    gh worktree run <RUN_ID> [--keep] [-- <command>]
+    gh worktree run <RUN_ID>     [-- <command>]
+    gh worktree run rm <RUN_ID>
 
 DESCRIPTION:
     Fetches the workflow run's head branch and SHA, creates a git worktree
     pinned to the exact commit that triggered the run, and runs the given
     command inside the worktree (or opens $SHELL when no command is given).
-    The worktree is removed when the command exits unless --keep is passed.
 
-FLAGS:
-    --keep   Skip automatic worktree removal on exit. The worktree persists
-             and must be cleaned up manually:
-             git worktree remove .github/worktrees/run-<RUN_ID>
+    The worktree persists until explicitly removed with the 'rm' command.
+
+COMMANDS:
+    rm      Remove the worktree associated with the workflow run. Dirty
+            changes are auto-stashed before removal.
 
 EXAMPLES:
     gh worktree run 123
-    gh worktree run 123 -- gh ai run chat 123
     gh worktree run 123 -- nvim
-    gh worktree run 123 --keep -- tmux new-session -s run-123 -c .
+    gh worktree run rm 123
 EOF
 }
 
@@ -39,25 +39,38 @@ EOF
 # exact commit, and runs the command inside.
 #
 # Usage: _gh_run [RUN_ID] [-- command]
+#        _gh_run rm <RUN_ID>
 _gh_run() {
 	case "${1:-}" in
 	--help | -h | help)
 		_show_run_help
 		return 0
 		;;
+	rm)
+		shift
+		local run_id=""
+		_parse_number_arg run_id "$@" || return 1
+		if [[ -z "$run_id" ]]; then
+			gum log --level error "No run ID provided for removal"
+			return 1
+		fi
+
+		local worktree_path
+		worktree_path=$(_gh_worktree_path "run" "$run_id") || return 1
+
+		if [[ ! -d "$worktree_path" ]]; then
+			gum log --level warn "Worktree for workflow run #${run_id} not found at: ${worktree_path}"
+			return 0
+		fi
+
+		gum spin --title "Removing worktree for workflow run #${run_id}..." -- \
+			"$_gh_worktree_source_dir/scripts/gh_worktree.sh" remove "$worktree_path"
+		return 0
+		;;
 	esac
 
 	local args=() passthrough=()
 	_split_on_separator args passthrough "$@"
-
-	local keep=0 filtered_args=()
-	for _arg in "${args[@]+"${args[@]}"}"; do
-		case "$_arg" in
-		--keep) keep=1 ;;
-		*) filtered_args+=("$_arg") ;;
-		esac
-	done
-	args=("${filtered_args[@]+"${filtered_args[@]}"}")
 
 	local run_id=""
 	_parse_number_arg run_id "${args[@]}"
@@ -96,9 +109,5 @@ _gh_run() {
 		return 1
 	fi
 
-	if [[ "$keep" -eq 1 ]]; then
-		_gh_worktree_run --keep "$worktree_path" "${passthrough[@]}"
-	else
-		_gh_worktree_run "$worktree_path" "${passthrough[@]}"
-	fi
+	_gh_worktree_run "$worktree_path" "${passthrough[@]}"
 }

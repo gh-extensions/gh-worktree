@@ -12,24 +12,24 @@ _show_issue_help() {
 gh worktree issue - Open an isolated worktree for an issue
 
 USAGE:
-    gh worktree issue <ISSUE_NUMBER> [--keep] [-- <command>]
+    gh worktree issue <ISSUE_NUMBER>     [-- <command>]
+    gh worktree issue rm <ISSUE_NUMBER>
 
 DESCRIPTION:
     Creates a new branch from the default branch, sets up a git worktree,
     and runs the given command inside the worktree (or opens $SHELL when
-    no command is given). The worktree is removed when the command exits
-    unless --keep is passed.
+    no command is given).
 
-FLAGS:
-    --keep   Skip automatic worktree removal on exit. The worktree persists
-             and must be cleaned up manually:
-             git worktree remove .github/worktrees/issue-<ISSUE_NUMBER>
+    The worktree persists until explicitly removed with the 'rm' command.
+
+COMMANDS:
+    rm      Remove the worktree associated with the issue. Dirty changes
+            are auto-stashed before removal.
 
 EXAMPLES:
     gh worktree issue 55
-    gh worktree issue 55 -- gh ai issue chat 55
     gh worktree issue 55 -- nvim
-    gh worktree issue 55 --keep -- tmux new-session -s issue-55 -c .
+    gh worktree issue rm 55
 EOF
 }
 
@@ -39,25 +39,38 @@ EOF
 # runs the command inside.
 #
 # Usage: _gh_issue [ISSUE_NUMBER] [-- command]
+#        _gh_issue rm <ISSUE_NUMBER>
 _gh_issue() {
 	case "${1:-}" in
 	--help | -h | help)
 		_show_issue_help
 		return 0
 		;;
+	rm)
+		shift
+		local issue_number=""
+		_parse_number_arg issue_number "$@" || return 1
+		if [[ -z "$issue_number" ]]; then
+			gum log --level error "No issue number provided for removal"
+			return 1
+		fi
+
+		local worktree_path
+		worktree_path=$(_gh_worktree_path "issue" "$issue_number") || return 1
+
+		if [[ ! -d "$worktree_path" ]]; then
+			gum log --level warn "Worktree for issue #${issue_number} not found at: ${worktree_path}"
+			return 0
+		fi
+
+		gum spin --title "Removing worktree for issue #${issue_number}..." -- \
+			"$_gh_worktree_source_dir/scripts/gh_worktree.sh" remove "$worktree_path"
+		return 0
+		;;
 	esac
 
 	local args=() passthrough=()
 	_split_on_separator args passthrough "$@"
-
-	local keep=0 filtered_args=()
-	for _arg in "${args[@]+"${args[@]}"}"; do
-		case "$_arg" in
-		--keep) keep=1 ;;
-		*) filtered_args+=("$_arg") ;;
-		esac
-	done
-	args=("${filtered_args[@]+"${filtered_args[@]}"}")
 
 	local issue_number=""
 	_parse_number_arg issue_number "${args[@]}"
@@ -92,9 +105,5 @@ _gh_issue() {
 		return 1
 	fi
 
-	if [[ "$keep" -eq 1 ]]; then
-		_gh_worktree_run --keep "$worktree_path" "${passthrough[@]}"
-	else
-		_gh_worktree_run "$worktree_path" "${passthrough[@]}"
-	fi
+	_gh_worktree_run "$worktree_path" "${passthrough[@]}"
 }

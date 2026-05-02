@@ -12,24 +12,24 @@ _show_pr_help() {
 gh worktree pr - Open an isolated worktree for a pull request
 
 USAGE:
-    gh worktree pr <PR_NUMBER> [--keep] [-- <command>]
+    gh worktree pr <PR_NUMBER>     [-- <command>]
+    gh worktree pr rm <PR_NUMBER>
 
 DESCRIPTION:
     Fetches the pull request head branch, creates a git worktree tracking it,
     and runs the given command inside the worktree (or opens $SHELL when
-    no command is given). The worktree is removed when the command exits
-    unless --keep is passed.
+    no command is given).
 
-FLAGS:
-    --keep   Skip automatic worktree removal on exit. The worktree persists
-             and must be cleaned up manually:
-             git worktree remove .github/worktrees/pull-<PR_NUMBER>
+    The worktree persists until explicitly removed with the 'rm' command.
+
+COMMANDS:
+    rm      Remove the worktree associated with the pull request. Dirty
+            changes are auto-stashed before removal.
 
 EXAMPLES:
     gh worktree pr 42
-    gh worktree pr 42 -- gh ai pr chat 42
     gh worktree pr 42 -- nvim
-    gh worktree pr 42 --keep -- tmux new-session -s pull-42 -c .
+    gh worktree pr rm 42
 EOF
 }
 
@@ -38,25 +38,38 @@ EOF
 # Fetches the pull request head branch, creates a worktree, and runs the command inside.
 #
 # Usage: _gh_pr [PR_NUMBER] [-- command]
+#        _gh_pr rm <PR_NUMBER>
 _gh_pr() {
 	case "${1:-}" in
 	--help | -h | help)
 		_show_pr_help
 		return 0
 		;;
+	rm)
+		shift
+		local pr_number=""
+		_parse_number_arg pr_number "$@" || return 1
+		if [[ -z "$pr_number" ]]; then
+			gum log --level error "No pull request number provided for removal"
+			return 1
+		fi
+
+		local worktree_path
+		worktree_path=$(_gh_worktree_path "pull" "$pr_number") || return 1
+
+		if [[ ! -d "$worktree_path" ]]; then
+			gum log --level warn "Worktree for pull request #${pr_number} not found at: ${worktree_path}"
+			return 0
+		fi
+
+		gum spin --title "Removing worktree for pull request #${pr_number}..." -- \
+			"$_gh_worktree_source_dir/scripts/gh_worktree.sh" remove "$worktree_path"
+		return 0
+		;;
 	esac
 
 	local args=() passthrough=()
 	_split_on_separator args passthrough "$@"
-
-	local keep=0 filtered_args=()
-	for _arg in "${args[@]+"${args[@]}"}"; do
-		case "$_arg" in
-		--keep) keep=1 ;;
-		*) filtered_args+=("$_arg") ;;
-		esac
-	done
-	args=("${filtered_args[@]+"${filtered_args[@]}"}")
 
 	local pr_number=""
 	_parse_number_arg pr_number "${args[@]}"
@@ -92,9 +105,5 @@ _gh_pr() {
 		return 1
 	fi
 
-	if [[ "$keep" -eq 1 ]]; then
-		_gh_worktree_run --keep "$worktree_path" "${passthrough[@]}"
-	else
-		_gh_worktree_run "$worktree_path" "${passthrough[@]}"
-	fi
+	_gh_worktree_run "$worktree_path" "${passthrough[@]}"
 }

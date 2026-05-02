@@ -33,7 +33,7 @@ setup() {
 		# shellcheck source=../scripts/gh_run.sh
 		source "$REPO_ROOT/scripts/gh_run.sh"
 		declare -f _parse_number_arg _show_run_help _gh_run \
-			_split_on_separator _git_repo_path _gh_worktree_create _gh_worktree_remove _gh_worktree_run
+			_split_on_separator _git_repo_path _gh_worktree_create _gh_worktree_remove _gh_worktree_run _gh_worktree_path
 	)"
 }
 
@@ -182,6 +182,34 @@ setup() {
 	[[ "$output" == *"remote_ref=main"* ]]
 	[[ "$output" == *"sha=abc123def"* ]]
 	[[ "$output" == *"branch="* ]]
+}
+
+@test "_gh_run: rm calls _gh_worktree_remove with correct path" {
+	gum() {
+		case "$1" in
+		spin)
+			while [[ $# -gt 0 && "$1" != "--" ]]; do shift; done
+			[[ $# -gt 0 ]] && shift
+			"$@"
+			;;
+		log) ;;
+		esac
+	}
+	export -f gum
+
+	_gh_worktree_base_dir() { echo "$BATS_TEST_TMPDIR/worktrees"; }
+	export -f _gh_worktree_base_dir
+
+	_gh_worktree_remove() { echo "REMOVE:path=$1"; }
+	export -f _gh_worktree_remove
+
+	# Create the directory so [[ -d ... ]] succeeds
+	mkdir -p "$BATS_TEST_TMPDIR/worktrees/run-123"
+
+	run _gh_run rm 123
+
+	[[ "$status" -eq 0 ]]
+	[[ "$output" == *"REMOVE:path=$BATS_TEST_TMPDIR/worktrees/run-123"* ]]
 }
 
 @test "_gh_run: forwards passthrough command to _gh_worktree_run" {
