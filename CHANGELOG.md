@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.7.0](https://github.com/gh-extensions/gh-worktree/compare/v0.6.1...v0.7.0) (2026-05-02)
+
+
+### Features
+
+* replace --keep flag with explicit rm subcommand for worktree cleanup ([5cceee7](https://github.com/gh-extensions/gh-worktree/commit/5cceee79aa06926c3e68c71447dfa3b35b1be613))
+
+
+### Bug Fixes
+
+* **worktree:** run git commands against repo root instead of cwd ([e582639](https://github.com/gh-extensions/gh-worktree/commit/e582639545a8c0ab00cc62c0ce0322940165fad8))
+
 ## [0.6.1](https://github.com/gh-extensions/gh-worktree/compare/v0.6.0...v0.6.1) (2026-04-16)
 
 
