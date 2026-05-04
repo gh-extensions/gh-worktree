@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/gh-extensions/gh-worktree/compare/v0.7.0...v0.7.1) (2026-05-04)
+
+
+### Bug Fixes
+
+* **github:** correct action versions in update.yml ([89a7490](https://github.com/gh-extensions/gh-worktree/commit/89a7490cc8933de37906929f98823dd6e29fcfc8))
+
 ## [0.7.0](https://github.com/gh-extensions/gh-worktree/compare/v0.6.1...v0.7.0) (2026-05-02)
 
 
