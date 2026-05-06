@@ -144,10 +144,10 @@ gh worktree pr rm 42
 
 Override the worktree base directory via environment variable or `gh config`.
 
-| Variable / Config Key       | Default             | Description                                   |
-| --------------------------- | ------------------- | --------------------------------------------- |
-| `$GH_WORKTREE_PATH` | —                   | Env var override; highest priority            |
-| `worktree.path`             | `.github/worktrees` | `gh config` key; used when env var is not set |
+| Variable / Config Key | Default             | Description                                   |
+| --------------------- | ------------------- | --------------------------------------------- |
+| `$GH_WORKTREE_PATH`   | —                   | Env var override; highest priority            |
+| `worktree.path`       | `.github/worktrees` | `gh config` key; used when env var is not set |
 
 ```bash
 # Set a custom worktree directory
@@ -166,10 +166,10 @@ used as-is.
 
 ## Integrations
 
-### gh-claude
+### gh-ai
 
-[gh-claude](https://github.com/gh-extensions/gh-claude) is an AI-powered GitHub CLI
-extension. Use `gh-worktree` to set up the environment and `gh-claude` to provide
+[gh-ai](https://github.com/gh-extensions/gh-ai) is an AI-powered GitHub CLI
+extension. Use `gh-worktree` to set up the environment and `gh-ai` to provide
 context:
 
 ```bash
@@ -178,12 +178,12 @@ gh worktree issue 55 -- gh claude issue chat 55
 gh worktree run 123 -- gh claude run chat 123
 ```
 
-`gh-worktree` owns the environment; `gh-claude` owns the context:
+`gh-worktree` owns the environment; `gh-ai` owns the context:
 
 ```text
 gh worktree pr 42 -- gh claude pr chat 42
   └── gh-worktree creates the worktree and runs the command inside it
-        └── gh-claude receives the PR context and runs inside the worktree
+        └── gh-ai receives the PR context and runs inside the worktree
 ```
 
 ### gh-fzf
@@ -197,14 +197,14 @@ that wraps `gh` commands in an interactive fuzzy finder. Source
 source "$HOME/.local/share/gh/extensions/gh-worktree/extras/gh_fzf.sh"
 ```
 
-| Context        | Key         | Action                                                                                    |
-| -------------- | ----------- | ----------------------------------------------------------------------------------------- |
-| `gh-fzf pr`    | `enter`     | Open a worktree for the selected PR in a new tmux session (tmux) or inline               |
-| `gh-fzf pr`    | `alt-enter` | Open a worktree for the selected PR in a new tmux window (tmux only)                     |
-| `gh-fzf issue` | `enter`     | Open a worktree for the selected issue in a new tmux session (tmux) or inline            |
-| `gh-fzf issue` | `alt-enter` | Open a worktree for the selected issue in a new tmux window (tmux only)                  |
-| `gh-fzf run`   | `enter`     | Open a worktree for the selected run in a new tmux session (tmux) or inline              |
-| `gh-fzf run`   | `alt-enter` | Open a worktree for the selected run in a new tmux window (tmux only)                    |
+| Context        | Key         | Action                                                                        |
+| -------------- | ----------- | ----------------------------------------------------------------------------- |
+| `gh-fzf pr`    | `enter`     | Open a worktree for the selected PR in a new tmux session (tmux) or inline    |
+| `gh-fzf pr`    | `alt-enter` | Open a worktree for the selected PR in a new tmux window (tmux only)          |
+| `gh-fzf issue` | `enter`     | Open a worktree for the selected issue in a new tmux session (tmux) or inline |
+| `gh-fzf issue` | `alt-enter` | Open a worktree for the selected issue in a new tmux window (tmux only)       |
+| `gh-fzf run`   | `enter`     | Open a worktree for the selected run in a new tmux session (tmux) or inline   |
+| `gh-fzf run`   | `alt-enter` | Open a worktree for the selected run in a new tmux window (tmux only)         |
 
 `alt-enter` is only registered when inside tmux. Sessions are named
 `<current-session>/<type>-<number>` (e.g. `main/pull-42`). Re-triggering
@@ -212,11 +212,11 @@ source "$HOME/.local/share/gh/extensions/gh-worktree/extras/gh_fzf.sh"
 
 ## The gh-extensions Ecosystem
 
-| Repo | What it provides |
-|------|-----------------|
-| [gh-claude](https://github.com/gh-extensions/gh-claude) | AI-powered copilot for the GitHub CLI |
-| [gh-fzf](https://github.com/gh-extensions/gh-fzf) | Fuzzy finder for GitHub CLI |
-| **gh-worktree** ← you are here | Isolated git worktrees for PRs, issues, and workflow runs |
+| Repo                                              | What it provides                                          |
+| ------------------------------------------------- | --------------------------------------------------------- |
+| [gh-ai](https://github.com/gh-extensions/gh-ai)   | AI-powered copilot for the GitHub CLI                     |
+| [gh-fzf](https://github.com/gh-extensions/gh-fzf) | Fuzzy finder for GitHub CLI                               |
+| **gh-worktree** ← you are here                    | Isolated git worktrees for PRs, issues, and workflow runs |
 
 ## License
 
