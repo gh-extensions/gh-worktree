@@ -42,12 +42,22 @@ _uuidv5() {
 	local name="$1"
 	# OID namespace: 6ba7b812-9dad-11d1-80b4-00c04fd430c8
 	local hash
-	hash=$(
-		{
-			printf '\x6b\xa7\xb8\x12\x9d\xad\x11\xd1\x80\xb4\x00\xc0\x4f\xd4\x30\xc8'
-			printf '%s' "$name"
-		} | openssl dgst -sha1 | awk '{print $NF}'
-	)
+	
+	_print_uuidv5_input() {
+		printf '\x6b\xa7\xb8\x12\x9d\xad\x11\xd1\x80\xb4\x00\xc0\x4f\xd4\x30\xc8'
+		printf '%s' "$1"
+	}
+
+	if command -v shasum >/dev/null 2>&1; then
+		hash=$(_print_uuidv5_input "$name" | shasum | awk '{print $1}')
+	elif command -v sha1sum >/dev/null 2>&1; then
+		hash=$(_print_uuidv5_input "$name" | sha1sum | awk '{print $1}')
+	elif command -v openssl >/dev/null 2>&1; then
+		hash=$(_print_uuidv5_input "$name" | openssl dgst -sha1 | awk '{print $NF}')
+	else
+		return 1
+	fi
+
 	local b8
 	b8=$(printf '%02x' $(((16#${hash:16:2} & 0x3f) | 0x80)))
 	printf '%s-%s-%s%s-%s%s-%s\n' \
@@ -274,8 +284,22 @@ _gh_worktree_run() {
 	shift
 	local cmd=("$@")
 
-	if [[ -z "${GH_WORKTREE_ID:-}" ]] && command -v openssl &>/dev/null; then
-		export GH_WORKTREE_ID=$(_uuidv5 "$(basename "$worktree_path")")
+	if [[ -z "${GH_WORKTREE_ID:-}" ]]; then
+		local _nwo="${GH_REPO:-}"
+		if [[ -z "$_nwo" ]] && command -v gh &>/dev/null; then
+			_nwo=$(gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null || true)
+		fi
+		
+		local _uuid=""
+		if [[ -n "$_nwo" ]]; then
+			_uuid=$(_uuidv5 "${_nwo}:$(basename "$worktree_path")" || true)
+		else
+			_uuid=$(_uuidv5 "$(basename "$worktree_path")" || true)
+		fi
+		
+		if [[ -n "$_uuid" ]]; then
+			export GH_WORKTREE_ID="$_uuid"
+		fi
 	fi
 
 	cd "$worktree_path"

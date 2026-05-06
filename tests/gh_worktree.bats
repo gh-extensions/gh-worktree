@@ -481,7 +481,7 @@ teardown() {
 # ---------------------------------------------------------------------------
 
 @test "_uuidv5: produces a valid UUIDv5 for pull-123" {
-	if ! command -v openssl &>/dev/null; then skip "openssl not available"; fi
+	if ! (command -v shasum || command -v sha1sum || command -v openssl) &>/dev/null; then skip "no hash utility available"; fi
 
 	run _uuidv5 "pull-123"
 	[[ "$status" -eq 0 ]]
@@ -489,7 +489,7 @@ teardown() {
 }
 
 @test "_uuidv5: is deterministic — same input yields same UUID" {
-	if ! command -v openssl &>/dev/null; then skip "openssl not available"; fi
+	if ! (command -v shasum || command -v sha1sum || command -v openssl) &>/dev/null; then skip "no hash utility available"; fi
 
 	local first second
 	first=$(_uuidv5 "issue-55")
@@ -498,7 +498,7 @@ teardown() {
 }
 
 @test "_uuidv5: different inputs yield different UUIDs" {
-	if ! command -v openssl &>/dev/null; then skip "openssl not available"; fi
+	if ! (command -v shasum || command -v sha1sum || command -v openssl) &>/dev/null; then skip "no hash utility available"; fi
 
 	local a b
 	a=$(_uuidv5 "pull-1")
@@ -510,8 +510,8 @@ teardown() {
 # _gh_worktree_run — GH_WORKTREE_ID
 # ---------------------------------------------------------------------------
 
-@test "_gh_worktree_run: exports GH_WORKTREE_ID when openssl is available" {
-	if ! command -v openssl &>/dev/null; then skip "openssl not available"; fi
+@test "_gh_worktree_run: exports GH_WORKTREE_ID when a hash utility is available" {
+	if ! (command -v shasum || command -v sha1sum || command -v openssl) &>/dev/null; then skip "no hash utility available"; fi
 	unset GH_WORKTREE_ID
 
 	run _gh_worktree_run "$WORKTREE_PATH" bash -c 'echo "$GH_WORKTREE_ID"'
@@ -527,16 +527,18 @@ teardown() {
 	[[ "$output" == "my-custom-session" ]]
 }
 
-@test "_gh_worktree_run: does not set GH_WORKTREE_ID when openssl unavailable" {
+@test "_gh_worktree_run: does not set GH_WORKTREE_ID when no hash utility is available" {
 	unset GH_WORKTREE_ID
 
-	# Build a minimal PATH that contains bash but not openssl
-	local nossl="$BATS_TEST_TMPDIR/nossl"
-	mkdir -p "$nossl"
-	ln -sf "$(command -v bash)" "$nossl/bash"
+	# Build a minimal PATH that contains bash but not any hash utility
+	local nohash="$BATS_TEST_TMPDIR/nohash"
+	mkdir -p "$nohash"
+	ln -sf "$(command -v bash)" "$nohash/bash"
+	ln -sf "$(command -v awk)" "$nohash/awk"
+	ln -sf "$(command -v basename)" "$nohash/basename"
 
 	local saved_path="$PATH"
-	export PATH="$nossl"
+	export PATH="$nohash"
 	run _gh_worktree_run "$WORKTREE_PATH" bash -c 'echo "${GH_WORKTREE_ID:-unset}"'
 	export PATH="$saved_path"
 
