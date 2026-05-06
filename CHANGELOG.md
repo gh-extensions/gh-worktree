@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/gh-extensions/gh-worktree/compare/v0.7.1...v0.8.0) (2026-05-06)
+
+
+### Features
+
+* support shasum and sha1sum for uuidv5 generation ([ce954dc](https://github.com/gh-extensions/gh-worktree/commit/ce954dc5032eac47d3cfcf6ed69259aac4505928))
+
 ## [0.7.1](https://github.com/gh-extensions/gh-worktree/compare/v0.7.0...v0.7.1) (2026-05-04)
 
 
