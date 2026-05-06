@@ -186,27 +186,6 @@ gh worktree pr 42 -- gh claude pr chat 42
         └── gh-claude receives the PR context and runs inside the worktree
 ```
 
-#### Persistent sessions
-
-Since worktrees now persist by default, Claude sessions are automatically
-bound to them across re-entries when `shasum`, `sha1sum`, or `openssl` is available. `gh-worktree`
-exports `GH_WORKTREE_ID` — a deterministic UUID derived from
-the `<owner>/<repo>:<worktree_name>` format. `gh-claude` reads this variable to resume the same
-conversation whenever you re-enter the worktree, giving Claude continuity
-over the lifetime of the PR or issue.
-
-To pin a specific session instead of the auto-generated one:
-
-```bash
-GH_WORKTREE_ID=my-session gh worktree pr 42 -- gh claude pr chat 42
-```
-
-> **Note:** session continuity is a `gh-claude` feature. The
-> `GH_WORKTREE_ID` variable has no effect unless `gh-claude`
-> is the command being run. `shasum`, `sha1sum`, or `openssl` is required to generate the session
-> ID; without it the variable is simply not set and `gh-worktree` works
-> normally.
-
 ### gh-fzf
 
 [gh-fzf](https://github.com/gh-extensions/gh-fzf) is a GitHub CLI extension

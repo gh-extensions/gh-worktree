@@ -38,7 +38,7 @@ setup() {
 		source "$REPO_ROOT/scripts/gh_worktree.sh"
 		declare -f _gh_worktree_base_dir _gh_worktree_is_dirty _gh_worktree_has_unpushed \
 			_gh_worktree_create _gh_worktree_remove _git_repo_path _parse_number_arg \
-			_split_on_separator _gh_worktree_run _uuidv5 _gh_worktree_path
+			_split_on_separator _gh_worktree_run _gh_worktree_path
 	)"
 }
 
@@ -474,74 +474,4 @@ teardown() {
 
 	[[ "$status" -eq 0 ]]
 	[[ -d "$WORKTREE_PATH" ]]
-}
-
-# ---------------------------------------------------------------------------
-# _uuidv5
-# ---------------------------------------------------------------------------
-
-@test "_uuidv5: produces a valid UUIDv5 for pull-123" {
-	if ! (command -v shasum || command -v sha1sum || command -v openssl) &>/dev/null; then skip "no hash utility available"; fi
-
-	run _uuidv5 "pull-123"
-	[[ "$status" -eq 0 ]]
-	[[ "$output" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$ ]]
-}
-
-@test "_uuidv5: is deterministic — same input yields same UUID" {
-	if ! (command -v shasum || command -v sha1sum || command -v openssl) &>/dev/null; then skip "no hash utility available"; fi
-
-	local first second
-	first=$(_uuidv5 "issue-55")
-	second=$(_uuidv5 "issue-55")
-	[[ "$first" == "$second" ]]
-}
-
-@test "_uuidv5: different inputs yield different UUIDs" {
-	if ! (command -v shasum || command -v sha1sum || command -v openssl) &>/dev/null; then skip "no hash utility available"; fi
-
-	local a b
-	a=$(_uuidv5 "pull-1")
-	b=$(_uuidv5 "pull-2")
-	[[ "$a" != "$b" ]]
-}
-
-# ---------------------------------------------------------------------------
-# _gh_worktree_run — GH_WORKTREE_ID
-# ---------------------------------------------------------------------------
-
-@test "_gh_worktree_run: exports GH_WORKTREE_ID when a hash utility is available" {
-	if ! (command -v shasum || command -v sha1sum || command -v openssl) &>/dev/null; then skip "no hash utility available"; fi
-	unset GH_WORKTREE_ID
-
-	run _gh_worktree_run "$WORKTREE_PATH" bash -c 'echo "$GH_WORKTREE_ID"'
-	[[ "$status" -eq 0 ]]
-	[[ "$output" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$ ]]
-}
-
-@test "_gh_worktree_run: does not override pre-set GH_WORKTREE_ID" {
-	export GH_WORKTREE_ID="my-custom-session"
-
-	run _gh_worktree_run "$WORKTREE_PATH" bash -c 'echo "$GH_WORKTREE_ID"'
-	[[ "$status" -eq 0 ]]
-	[[ "$output" == "my-custom-session" ]]
-}
-
-@test "_gh_worktree_run: does not set GH_WORKTREE_ID when no hash utility is available" {
-	unset GH_WORKTREE_ID
-
-	# Build a minimal PATH that contains bash but not any hash utility
-	local nohash="$BATS_TEST_TMPDIR/nohash"
-	mkdir -p "$nohash"
-	ln -sf "$(command -v bash)" "$nohash/bash"
-	ln -sf "$(command -v awk)" "$nohash/awk"
-	ln -sf "$(command -v basename)" "$nohash/basename"
-
-	local saved_path="$PATH"
-	export PATH="$nohash"
-	run _gh_worktree_run "$WORKTREE_PATH" bash -c 'echo "${GH_WORKTREE_ID:-unset}"'
-	export PATH="$saved_path"
-
-	[[ "$status" -eq 0 ]]
-	[[ "$output" == "unset" ]]
 }
