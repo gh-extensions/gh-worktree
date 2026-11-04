@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/gh-extensions/gh-worktree/compare/v0.8.0...v0.9.0) (2026-11-04)
+
+
+### Features
+
+* **flake:** add the extension as a nix package ([#34](https://github.com/gh-extensions/gh-worktree/issues/34)) ([5ac17a9](https://github.com/gh-extensions/gh-worktree/commit/5ac17a9c5a80a10d87973c054a9176de602a4047))
+
 ## [0.8.0](https://github.com/gh-extensions/gh-worktree/compare/v0.7.1...v0.8.0) (2026-05-06)
 
 
