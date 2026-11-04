@@ -35,6 +35,18 @@ gh extension install gh-extensions/gh-worktree --pin v0.1.0  # recommended: pin 
 gh extension install gh-extensions/gh-worktree                # installs from main (unstable)
 ```
 
+**Nix:** the flake has the extension as a package, with its tools (`bash`, `gh`, `git`, `gum`, `jq`) in its `PATH`. With
+home-manager, add it to `programs.gh.extensions`:
+
+```nix
+{
+  inputs.gh-worktree.url = "github:gh-extensions/gh-worktree";
+
+  # in a home-manager module
+  programs.gh.extensions = [ inputs.gh-worktree.packages.${system}.default ];
+}
+```
+
 ## Usage
 
 ```bash
