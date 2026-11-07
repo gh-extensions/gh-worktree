@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/gh-extensions/gh-worktree/compare/v0.9.0...v0.9.1) (2026-11-07)
+
+
+### Bug Fixes
+
+* **ci:** merge with the App token so main gets its CI run ([#37](https://github.com/gh-extensions/gh-worktree/issues/37)) ([df74f1b](https://github.com/gh-extensions/gh-worktree/commit/df74f1bcdc598803e6140bb44dc6ae35c885bae6))
+
 ## [0.9.0](https://github.com/gh-extensions/gh-worktree/compare/v0.8.0...v0.9.0) (2026-11-04)
 
 
